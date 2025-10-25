@@ -1,12 +1,12 @@
-
 import React, { useState, useCallback } from 'react';
-import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill } from '../types';
-import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL } from '../constants';
+import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, FormattingOptions } from '../types';
+import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 import TemplateSelector from './TemplateSelector';
 import ThemeSelector from './ThemeSelector';
 import KeywordOptimizer from './KeywordOptimizer';
 import AiSuggestionModal from './AiSuggestionModal';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, DeleteIcon, MagicIcon, DownloadIcon, PaletteIcon } from './icons';
+import AdsenseBlock from './AdsenseBlock';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, DeleteIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon } from './icons';
 
 interface ResumeEditorProps {
   resumeData: ResumeData;
@@ -18,6 +18,8 @@ interface ResumeEditorProps {
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
   onDownloadPdf: () => void;
+  formattingOptions: FormattingOptions;
+  setFormattingOptions: (options: FormattingOptions) => void;
 }
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
@@ -39,7 +41,7 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
 );
 
 const ResumeEditor: React.FC<ResumeEditorProps> = ({
-  resumeData, onDataChange, onAddItem, onRemoveItem, templateId, setTemplateId, themeId, setThemeId, onDownloadPdf
+  resumeData, onDataChange, onAddItem, onRemoveItem, templateId, setTemplateId, themeId, setThemeId, onDownloadPdf, formattingOptions, setFormattingOptions
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ type: 'summary' | 'bulletPoints'; context: any; onAccept: (text: string) => void } | null>(null);
@@ -93,22 +95,61 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
             <ThemeSelector selectedTheme={themeId} onSelectTheme={setThemeId} />
         </div>
       </div>
+      
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="flex items-center mb-4">
+            <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+            <h2 className="text-xl font-bold text-gray-800 ml-3">Formatting</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
+                <select
+                    value={formattingOptions.fontFamily}
+                    onChange={(e) => setFormattingOptions({ ...formattingOptions, fontFamily: e.target.value as FormattingOptions['fontFamily'] })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                >
+                    {FONT_OPTIONS.map(font => (
+                        <option key={font.id} value={font.id}>{font.name}</option>
+                    ))}
+                </select>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Line Spacing</label>
+                <div className="flex items-center space-x-2">
+                    {LINE_HEIGHT_OPTIONS.map(spacing => (
+                        <button
+                            key={spacing.id}
+                            onClick={() => setFormattingOptions({ ...formattingOptions, lineHeight: spacing.id })}
+                            className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+                                formattingOptions.lineHeight === spacing.id
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
+                            {spacing.name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </div>
+      </div>
 
 
       <Section title="Personal Info" icon={<PersonalInfoIcon className="h-6 w-6 text-blue-600" />}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input placeholder="Full Name" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
-          <Input placeholder="Job Title" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
-          <Input placeholder="Email" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
-          <Input placeholder="Phone" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
-          <Input placeholder="Address" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
-          <Input placeholder="LinkedIn Profile URL" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
-          <Input placeholder="Personal Website/Portfolio" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
+          <Input placeholder="e.g., John Doe" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
+          <Input placeholder="e.g., Senior Software Engineer" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
+          <Input placeholder="e.g., john.doe@example.com" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
+          <Input placeholder="e.g., (123) 456-7890" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
+          <Input placeholder="e.g., San Francisco, CA" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
+          <Input placeholder="e.g., linkedin.com/in/johndoe" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
+          <Input placeholder="e.g., johndoe.dev" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
         </div>
       </Section>
       
       <Section title="Professional Summary" icon={<SummaryIcon className="h-6 w-6 text-blue-600" />}>
-        <Textarea placeholder="Write a brief summary of your career highlights..." value={resumeData.summary} onChange={e => onDataChange('summary', e.target.value)} />
+        <Textarea placeholder="Write a brief 2-3 sentence summary of your professional experience and career goals." value={resumeData.summary} onChange={e => onDataChange('summary', e.target.value)} />
         <button
           onClick={() => handleAiClick('summary', { jobTitle: resumeData.personalInfo.jobTitle, experience: resumeData.experience, skills: resumeData.skills }, (text) => onDataChange('summary', text))}
           className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm"
@@ -122,15 +163,15 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         {resumeData.experience.map((exp, index) => (
           <div key={exp.id} className="p-4 border rounded-md mb-4 bg-gray-50">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Input placeholder="Job Title" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
-              <Input placeholder="Company" value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
-              <Input placeholder="Location" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
+              <Input placeholder="e.g., Senior Frontend Developer" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
+              <Input placeholder="e.g., Tech Solutions Inc." value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
+              <Input placeholder="e.g., San Francisco, CA" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
               <div className="flex gap-4">
-                <Input placeholder="Start Date" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
-                <Input placeholder="End Date" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
+                <Input placeholder="e.g., Jan 2020" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
+                <Input placeholder="e.g., Present" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
               </div>
             </div>
-            <Textarea placeholder="Describe your responsibilities and achievements..." value={exp.description} onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} />
+            <Textarea placeholder="Describe your responsibilities and achievements in bullet points. e.g., • Led the development of a new client-facing dashboard..." value={exp.description} onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} />
              <div className="flex justify-between items-center mt-2">
               <button
                 onClick={() => handleAiClick('bulletPoints', { jobTitle: exp.jobTitle, company: exp.company, description: exp.description }, (text) => handleUpdateField('experience', index, 'description', text))}
@@ -152,11 +193,11 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         {resumeData.education.map((edu, index) => (
           <div key={edu.id} className="p-4 border rounded-md mb-4 bg-gray-50">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Input placeholder="Degree/Certificate" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
-              <Input placeholder="Institution" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
+              <Input placeholder="e.g., B.S. in Computer Science" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
+              <Input placeholder="e.g., State University" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
               <div className="flex gap-4">
-                <Input placeholder="Start Date" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
-                <Input placeholder="End Date" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
+                <Input placeholder="e.g., Sep 2013" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
+                <Input placeholder="e.g., May 2017" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
               </div>
             </div>
             <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 p-2 float-right"><DeleteIcon className="h-5 w-5"/></button>
@@ -171,7 +212,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {resumeData.skills.map((skill, index) => (
           <div key={skill.id} className="flex items-center bg-gray-50 p-2 border rounded-md">
-            <Input placeholder="Skill" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
+            <Input placeholder="e.g., React" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
             <button onClick={() => onRemoveItem('skills', index)} className="ml-2 text-red-500 hover:text-red-700 p-1"><DeleteIcon className="h-4 w-4"/></button>
           </div>
         ))}
@@ -181,6 +222,10 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         </button>
       </Section>
       
+      <div className="my-6">
+        <AdsenseBlock width="w-full" height="h-24" />
+      </div>
+
       <KeywordOptimizer resumeData={resumeData}/>
 
     </div>

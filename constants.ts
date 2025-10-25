@@ -1,13 +1,13 @@
-import { ResumeData, CoverLetterData, TemplateId, Theme } from './types';
+import { ResumeData, CoverLetterData, TemplateId, Theme, FontFamily, LineHeight, FormattingOptions } from './types';
 
 export const EMPTY_PERSONAL_INFO = {
-  fullName: 'John Doe',
-  jobTitle: 'Senior React Developer',
-  email: 'john.doe@email.com',
-  phone: '123-456-7890',
-  address: 'New York, USA',
-  linkedin: 'linkedin.com/in/johndoe',
-  website: 'johndoe.dev',
+  fullName: '',
+  jobTitle: '',
+  email: '',
+  phone: '',
+  address: '',
+  linkedin: '',
+  website: '',
 };
 
 export const EMPTY_EXPERIENCE = {
@@ -17,7 +17,7 @@ export const EMPTY_EXPERIENCE = {
   location: '',
   startDate: '',
   endDate: '',
-  description: '• Developed and maintained web applications using React and TypeScript.\n• Collaborated with cross-functional teams to deliver high-quality software.\n• Implemented responsive UI components with Tailwind CSS.',
+  description: '',
 };
 
 export const EMPTY_EDUCATION = {
@@ -38,44 +38,17 @@ export const EMPTY_SKILL = {
 
 export const EMPTY_RESUME: ResumeData = {
   personalInfo: EMPTY_PERSONAL_INFO,
-  summary: 'A highly motivated Senior React Developer with over 5 years of experience in building scalable and performant web applications. Proficient in modern frontend technologies including React, TypeScript, and Tailwind CSS. Passionate about creating exceptional user experiences and writing clean, maintainable code.',
+  summary: '',
   experience: [
-    {
-      id: 'exp1',
-      jobTitle: 'Senior Frontend Developer',
-      company: 'Tech Solutions Inc.',
-      location: 'San Francisco, CA',
-      startDate: 'Jan 2020',
-      endDate: 'Present',
-      description: '• Led the development of a new client-facing dashboard, improving user engagement by 25%.\n• Mentored junior developers and conducted code reviews to ensure code quality and consistency.\n• Optimized application performance, reducing load times by 40%.',
-    },
-    {
-      id: 'exp2',
-      jobTitle: 'Frontend Developer',
-      company: 'Web Innovators',
-      location: 'Boston, MA',
-      startDate: 'Jun 2017',
-      endDate: 'Dec 2019',
-      description: '• Built reusable components and frontend libraries for future use.\n• Translated designs and wireframes into high-quality code.\n• Worked with product managers to define feature requirements.',
-    }
+    { ...EMPTY_EXPERIENCE, id: 'exp1' },
   ],
   education: [
-    {
-      id: 'edu1',
-      degree: 'B.S. in Computer Science',
-      institution: 'State University',
-      location: 'New York, NY',
-      startDate: 'Sep 2013',
-      endDate: 'May 2017',
-      description: 'Graduated with honors.',
-    },
+    { ...EMPTY_EDUCATION, id: 'edu1' },
   ],
   skills: [
-    { id: 'skill1', name: 'React', level: 'Expert' },
-    { id: 'skill2', name: 'TypeScript', level: 'Expert' },
-    { id: 'skill3', name: 'JavaScript', level: 'Expert' },
-    { id: 'skill4', name: 'Tailwind CSS', level: 'Advanced' },
-    { id: 'skill5', name: 'Node.js', level: 'Intermediate' },
+    { ...EMPTY_SKILL, id: 'skill1' },
+    { ...EMPTY_SKILL, id: 'skill2' },
+    { ...EMPTY_SKILL, id: 'skill3' },
   ],
 };
 
@@ -165,3 +138,20 @@ export const AFFILIATE_BANNERS = [
         description: 'Learn from top universities and companies with Coursera.'
     }
 ];
+
+export const FONT_OPTIONS: { id: FontFamily; name: string; css: string }[] = [
+    { id: 'serif', name: 'Serif', css: 'font-serif' },
+    { id: 'sans', name: 'Sans-serif', css: 'font-sans' },
+    { id: 'mono', name: 'Monospace', css: 'font-mono' },
+];
+
+export const LINE_HEIGHT_OPTIONS: { id: LineHeight; name: string; css: string }[] = [
+    { id: 'sm', name: 'Compact', css: 'leading-snug' },
+    { id: 'md', name: 'Normal', css: 'leading-relaxed' },
+    { id: 'lg', name: 'Spacious', css: 'leading-loose' },
+];
+
+export const DEFAULT_FORMATTING: FormattingOptions = {
+    fontFamily: 'sans',
+    lineHeight: 'md'
+};

@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { CoverLetterData, ResumeData, ThemeId } from '../types';
 import AiSuggestionModal from './AiSuggestionModal';
@@ -83,10 +81,10 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
   
         <Section title="Recipient Information" icon={<BuildingIcon className="h-6 w-6 text-blue-600" />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input placeholder="Recipient Name (e.g., Jane Smith)" value={coverLetterData.recipientName} onChange={e => onDataChange('recipientName', e.target.value)} />
-            <Input placeholder="Recipient Company (e.g., Tech Solutions Inc.)" value={coverLetterData.recipientCompany} onChange={e => onDataChange('recipientCompany', e.target.value)} />
+            <Input placeholder="e.g., Jane Smith, Hiring Manager" value={coverLetterData.recipientName} onChange={e => onDataChange('recipientName', e.target.value)} />
+            <Input placeholder="e.g., Tech Solutions Inc." value={coverLetterData.recipientCompany} onChange={e => onDataChange('recipientCompany', e.target.value)} />
             <Input placeholder="Date" value={coverLetterData.date} onChange={e => onDataChange('date', e.target.value)} />
-            <Input placeholder="Your Name" value={coverLetterData.senderName} onChange={e => onDataChange('senderName', e.target.value)} />
+            <Input placeholder="e.g., John Doe" value={coverLetterData.senderName} onChange={e => onDataChange('senderName', e.target.value)} />
           </div>
         </Section>
         

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { ResumeData, CoverLetterData, TemplateId, ThemeId } from './types';
-import { EMPTY_RESUME, EMPTY_COVER_LETTER } from './constants';
+import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions } from './types';
+import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING } from './constants';
 import Header from './components/Header';
 import ResumeEditor from './components/ResumeEditor';
 import ResumePreview from './components/ResumePreview';
@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [templateId, setTemplateId] = useState<TemplateId>('classic');
   const [themeId, setThemeId] = useState<ThemeId>('default');
   const [view, setView] = useState<View>('editor');
+  const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
 
   // Sync senderName with resume fullName on initial load and when fullName changes
   useEffect(() => {
@@ -71,9 +72,9 @@ const App: React.FC = () => {
     }
 
     html2canvas(element, {
-      scale: 4, // Higher scale for better quality
+      scale: 2, // Balanced quality and performance
       useCORS: true,
-      backgroundColor: null, // Ensure transparency is handled correctly
+      backgroundColor: null,
     }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -85,22 +86,25 @@ const App: React.FC = () => {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      const margin = 15; // 15mm margin on each side
-      const contentWidth = pdfWidth - (margin * 2);
-
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
-      const canvasAspectRatio = canvasWidth / canvasHeight;
-
-      const contentHeight = contentWidth / canvasAspectRatio;
       
-      // Check if content exceeds one page height with margins
-      if (contentHeight > pdfHeight - (margin * 2)) {
-        console.warn(`${filename} content might be too long for a single A4 page.`);
-      }
+      const ratio = canvasWidth / pdfWidth;
+      const totalImageHeight = canvasHeight / ratio;
 
-      // Add image with margins
-      pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, contentHeight);
+      let heightLeft = totalImageHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, totalImageHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position -= pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight);
+        heightLeft -= pdfHeight;
+      }
+      
       pdf.save(filename);
     });
   }, []);
@@ -128,9 +132,16 @@ const App: React.FC = () => {
               themeId={themeId}
               setThemeId={setThemeId}
               onDownloadPdf={handleDownloadPdf}
+              formattingOptions={formattingOptions}
+              setFormattingOptions={setFormattingOptions}
             />
             <div className="lg:sticky top-4 self-start">
-              <ResumePreview resumeData={resumeData} templateId={templateId} themeId={themeId} />
+              <ResumePreview 
+                resumeData={resumeData} 
+                templateId={templateId} 
+                themeId={themeId} 
+                formattingOptions={formattingOptions} 
+              />
             </div>
           </div>
         );

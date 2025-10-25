@@ -1,24 +1,28 @@
 import React from 'react';
-import { ResumeData, TemplateId, Theme, ThemeId } from '../types';
-import { THEMES } from '../constants';
+import { ResumeData, TemplateId, Theme, ThemeId, FormattingOptions } from '../types';
+import { THEMES, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
   templateId: TemplateId;
   themeId: ThemeId;
+  formattingOptions: FormattingOptions;
 }
 
 interface TemplateProps {
   data: ResumeData;
   theme: Theme;
+  formatting: FormattingOptions;
 }
 
-const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
+const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
   const { personalInfo, summary, experience, education, skills } = data;
   const { colors } = theme;
+  const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
+  const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
 
   return (
-    <div className="p-8 font-serif" style={{ backgroundColor: colors.background, color: colors.text }}>
+    <div className={`p-8 ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
       <header className="text-center mb-8 border-b-2 pb-4" style={{ borderBottomColor: colors.primary }}>
         <h1 className="text-4xl font-bold tracking-wider uppercase" style={{ color: colors.primary }}>{personalInfo.fullName}</h1>
         <p className="text-lg font-light tracking-widest">{personalInfo.jobTitle}</p>
@@ -32,7 +36,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
       </div>
       <section className="mb-6">
         <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Summary</h2>
-        <p className="text-sm leading-relaxed">{summary}</p>
+        <p className="text-sm">{summary}</p>
       </section>
       <section className="mb-6">
         <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Experience</h2>
@@ -71,12 +75,14 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
   );
 };
 
-const ModernTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
+const ModernTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
     const { personalInfo, summary, experience, education, skills } = data;
     const { colors } = theme;
+    const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
+    const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
 
     return (
-        <div className="grid grid-cols-3 gap-8 p-8 font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
+        <div className={`grid grid-cols-3 gap-8 p-8 ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
             <aside className="col-span-1 pr-8 border-r-2" style={{ borderRightColor: colors.secondary }}>
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold" style={{ color: colors.primary }}>{personalInfo.fullName}</h1>
@@ -110,7 +116,7 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
             <main className="col-span-2">
                 <section className="mb-6">
                     <h2 className="text-2xl font-bold border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Summary</h2>
-                    <p className="text-sm leading-relaxed">{summary}</p>
+                    <p className="text-sm">{summary}</p>
                 </section>
                 <section>
                     <h2 className="text-2xl font-bold border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Experience</h2>
@@ -132,16 +138,18 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
     );
 };
 
-const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
+const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
     const { personalInfo, summary, experience, education, skills } = data;
     const { colors } = theme;
+    const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
+    const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
     
     // For this template, let's use a slightly darker background for better contrast with the primary color sidebar
     const creativeBg = '#F9FAFB'; // A very light gray, almost white
     const creativeTextColor = '#111827'; // Dark gray for text
 
     return (
-        <div className="p-8 font-sans relative" style={{ backgroundColor: creativeBg, color: creativeTextColor }}>
+        <div className={`p-8 ${fontClass} ${lineHeightClass} relative`} style={{ backgroundColor: creativeBg, color: creativeTextColor }}>
             <div className="absolute top-0 left-0 w-1/3 h-full z-0" style={{ backgroundColor: colors.primary }}></div>
             <div className="relative z-10 grid grid-cols-3 gap-8">
                 <aside className="col-span-1 text-white">
@@ -168,7 +176,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
                     </header>
                     <section className="mb-6">
                         <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Summary</h2>
-                        <p className="text-sm leading-relaxed">{summary}</p>
+                        <p className="text-sm">{summary}</p>
                     </section>
                     <section className="mb-6">
                         <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Experience</h2>
@@ -201,14 +209,14 @@ const templates = {
   creative: CreativeTemplate,
 };
 
-const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId }) => {
+const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId, formattingOptions }) => {
   const TemplateComponent = templates[templateId];
   const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         <div id="resume-preview">
-            <TemplateComponent data={resumeData} theme={selectedTheme} />
+            <TemplateComponent data={resumeData} theme={selectedTheme} formatting={formattingOptions} />
         </div>
     </div>
   );

@@ -71,3 +71,11 @@ export interface Theme {
         text: string;
     };
 }
+
+export type FontFamily = 'serif' | 'sans' | 'mono';
+export type LineHeight = 'sm' | 'md' | 'lg';
+
+export interface FormattingOptions {
+  fontFamily: FontFamily;
+  lineHeight: LineHeight;
+}
