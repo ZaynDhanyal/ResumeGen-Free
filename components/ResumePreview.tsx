@@ -1,0 +1,217 @@
+import React from 'react';
+import { ResumeData, TemplateId, Theme, ThemeId } from '../types';
+import { THEMES } from '../constants';
+
+interface ResumePreviewProps {
+  resumeData: ResumeData;
+  templateId: TemplateId;
+  themeId: ThemeId;
+}
+
+interface TemplateProps {
+  data: ResumeData;
+  theme: Theme;
+}
+
+const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
+  const { personalInfo, summary, experience, education, skills } = data;
+  const { colors } = theme;
+
+  return (
+    <div className="p-8 font-serif" style={{ backgroundColor: colors.background, color: colors.text }}>
+      <header className="text-center mb-8 border-b-2 pb-4" style={{ borderBottomColor: colors.primary }}>
+        <h1 className="text-4xl font-bold tracking-wider uppercase" style={{ color: colors.primary }}>{personalInfo.fullName}</h1>
+        <p className="text-lg font-light tracking-widest">{personalInfo.jobTitle}</p>
+      </header>
+      <div className="flex justify-center space-x-6 text-sm mb-8">
+        <span>{personalInfo.email}</span>
+        <span>|</span>
+        <span>{personalInfo.phone}</span>
+        <span>|</span>
+        <span>{personalInfo.address}</span>
+      </div>
+      <section className="mb-6">
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Summary</h2>
+        <p className="text-sm leading-relaxed">{summary}</p>
+      </section>
+      <section className="mb-6">
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Experience</h2>
+        {experience.map(exp => (
+          <div key={exp.id} className="mb-4">
+            <div className="flex justify-between items-baseline">
+              <h3 className="text-lg font-semibold">{exp.jobTitle}</h3>
+              <p className="text-sm" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
+            </div>
+            <p className="text-md italic">{exp.company}, {exp.location}</p>
+            <ul className="list-disc list-inside mt-1 text-sm space-y-1">
+              {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
+            </ul>
+          </div>
+        ))}
+      </section>
+      <section className="mb-6">
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Education</h2>
+        {education.map(edu => (
+          <div key={edu.id} className="mb-2">
+            <div className="flex justify-between items-baseline">
+              <h3 className="text-lg font-semibold">{edu.degree}</h3>
+              <p className="text-sm" style={{ opacity: 0.8 }}>{edu.startDate} - {edu.endDate}</p>
+            </div>
+            <p className="text-md italic">{edu.institution}, {edu.location}</p>
+          </div>
+        ))}
+      </section>
+      <section>
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Skills</h2>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {skills.map(skill => <span key={skill.id} className="text-sm px-3 py-1 rounded-full" style={{ backgroundColor: colors.secondary, color: colors.primary }}>{skill.name}</span>)}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+const ModernTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
+    const { personalInfo, summary, experience, education, skills } = data;
+    const { colors } = theme;
+
+    return (
+        <div className="grid grid-cols-3 gap-8 p-8 font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
+            <aside className="col-span-1 pr-8 border-r-2" style={{ borderRightColor: colors.secondary }}>
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold" style={{ color: colors.primary }}>{personalInfo.fullName}</h1>
+                    <p className="text-md">{personalInfo.jobTitle}</p>
+                </div>
+                <section className="mb-6">
+                    <h2 className="text-lg font-semibold uppercase mb-2" style={{ color: colors.primary }}>Contact</h2>
+                    <p className="text-sm mb-1">{personalInfo.email}</p>
+                    <p className="text-sm mb-1">{personalInfo.phone}</p>
+                    <p className="text-sm mb-1">{personalInfo.address}</p>
+                    <p className="text-sm mb-1">{personalInfo.linkedin}</p>
+                    <p className="text-sm mb-1">{personalInfo.website}</p>
+                </section>
+                <section className="mb-6">
+                    <h2 className="text-lg font-semibold uppercase mb-2" style={{ color: colors.primary }}>Skills</h2>
+                    <ul className="space-y-1">
+                        {skills.map(skill => <li key={skill.id} className="text-sm px-2 py-1 rounded" style={{ backgroundColor: colors.secondary }}>{skill.name}</li>)}
+                    </ul>
+                </section>
+                <section>
+                    <h2 className="text-lg font-semibold uppercase mb-2" style={{ color: colors.primary }}>Education</h2>
+                    {education.map(edu => (
+                        <div key={edu.id} className="mb-2">
+                            <h3 className="font-bold text-sm">{edu.degree}</h3>
+                            <p className="text-xs italic">{edu.institution}</p>
+                            <p className="text-xs" style={{ opacity: 0.8 }}>{edu.startDate} - {edu.endDate}</p>
+                        </div>
+                    ))}
+                </section>
+            </aside>
+            <main className="col-span-2">
+                <section className="mb-6">
+                    <h2 className="text-2xl font-bold border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Summary</h2>
+                    <p className="text-sm leading-relaxed">{summary}</p>
+                </section>
+                <section>
+                    <h2 className="text-2xl font-bold border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Experience</h2>
+                    {experience.map(exp => (
+                        <div key={exp.id} className="mb-4">
+                            <div className="flex justify-between items-baseline">
+                                <h3 className="text-lg font-semibold">{exp.jobTitle}</h3>
+                                <p className="text-xs" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
+                            </div>
+                            <p className="text-md font-medium">{exp.company}, {exp.location}</p>
+                            <ul className="list-disc list-inside mt-1 text-sm space-y-1">
+                                {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
+                            </ul>
+                        </div>
+                    ))}
+                </section>
+            </main>
+        </div>
+    );
+};
+
+const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme }) => {
+    const { personalInfo, summary, experience, education, skills } = data;
+    const { colors } = theme;
+    
+    // For this template, let's use a slightly darker background for better contrast with the primary color sidebar
+    const creativeBg = '#F9FAFB'; // A very light gray, almost white
+    const creativeTextColor = '#111827'; // Dark gray for text
+
+    return (
+        <div className="p-8 font-sans relative" style={{ backgroundColor: creativeBg, color: creativeTextColor }}>
+            <div className="absolute top-0 left-0 w-1/3 h-full z-0" style={{ backgroundColor: colors.primary }}></div>
+            <div className="relative z-10 grid grid-cols-3 gap-8">
+                <aside className="col-span-1 text-white">
+                    <img src={`https://picsum.photos/seed/${personalInfo.fullName}/200`} alt="Profile" className="rounded-full w-40 h-40 mx-auto mb-6 border-4 border-white shadow-lg"/>
+                    <section className="mb-6">
+                        <h2 className="text-lg font-bold uppercase mb-2">Contact</h2>
+                        <p className="text-sm mb-1 break-words">{personalInfo.email}</p>
+                        <p className="text-sm mb-1">{personalInfo.phone}</p>
+                    </section>
+                    <section className="mb-6">
+                        <h2 className="text-lg font-bold uppercase mb-2">Education</h2>
+                        {education.map(edu => (
+                            <div key={edu.id} className="mb-2">
+                                <h3 className="font-bold text-sm">{edu.degree}</h3>
+                                <p className="text-xs italic">{edu.institution}</p>
+                            </div>
+                        ))}
+                    </section>
+                </aside>
+                <main className="col-span-2 pl-8">
+                    <header className="mb-8">
+                        <h1 className="text-5xl font-extrabold" style={{ color: colors.primary }}>{personalInfo.fullName}</h1>
+                        <p className="text-xl" style={{ color: creativeTextColor, opacity: 0.8 }}>{personalInfo.jobTitle}</p>
+                    </header>
+                    <section className="mb-6">
+                        <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Summary</h2>
+                        <p className="text-sm leading-relaxed">{summary}</p>
+                    </section>
+                    <section className="mb-6">
+                        <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Experience</h2>
+                        {experience.map(exp => (
+                            <div key={exp.id} className="mb-4">
+                                <h3 className="text-lg font-semibold">{exp.jobTitle} at {exp.company}</h3>
+                                <p className="text-xs" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
+                                <ul className="list-disc list-inside mt-1 text-sm space-y-1">
+                                    {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
+                                </ul>
+                            </div>
+                        ))}
+                    </section>
+                     <section>
+                        <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Skills</h2>
+                        <div className="flex flex-wrap gap-2 mt-3">
+                            {skills.map(skill => <span key={skill.id} className="text-sm px-3 py-1 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>{skill.name}</span>)}
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </div>
+    );
+};
+
+
+const templates = {
+  classic: ClassicTemplate,
+  modern: ModernTemplate,
+  creative: CreativeTemplate,
+};
+
+const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId }) => {
+  const TemplateComponent = templates[templateId];
+  const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
+
+  return (
+    <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div id="resume-preview">
+            <TemplateComponent data={resumeData} theme={selectedTheme} />
+        </div>
+    </div>
+  );
+};
+
+export default ResumePreview;
