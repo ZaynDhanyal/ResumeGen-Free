@@ -219,7 +219,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
     };
 
     const renderAuthForms = () => {
-        // ... (rest of renderAuthForms remains the same, but using authError and authMessage)
         switch (authView) {
             case 'forgot':
                 return (
@@ -305,17 +304,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
 
     return (
         <div className="container mx-auto p-4 lg:p-8">
-            <div className="flex justify-between items-center border-b pb-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b pb-4 mb-6 gap-4">
                 <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
                 <button 
                     onClick={handleLogout} 
-                    className="flex items-center px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                    className="flex items-center justify-center sm:w-auto w-full px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
                 >
                     <LogoutIcon className="h-5 w-5 mr-2" />
                     Logout
                 </button>
             </div>
-            <div className="flex space-x-2 mb-6 border-b">
+            <div className="flex space-x-2 mb-6 border-b overflow-x-auto pb-2">
                 <button onClick={() => setActiveTab('blog')} className={tabButtonClasses('blog')}>Blog Posts</button>
                 <button onClick={() => setActiveTab('affiliates')} className={tabButtonClasses('affiliates')}>Affiliate Banners</button>
                 <button onClick={() => setActiveTab('adsense')} className={tabButtonClasses('adsense')}>AdSense</button>
@@ -331,15 +330,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                     </div>
                     <div className="space-y-4">
                         {blogPosts.length > 0 ? blogPosts.map(post => (
-                            <div key={post.id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
-                                <div className="flex items-center gap-4">
-                                    {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="h-12 w-20 object-cover rounded"/>}
+                            <div key={post.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                                <div className="flex items-center gap-4 w-full">
+                                    {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="h-12 w-20 object-cover rounded hidden sm:block"/>}
                                     <div>
                                         <h3 className="font-bold text-gray-800">{post.title}</h3>
                                         <p className="text-sm text-gray-600">by {post.author} on {new Date(post.date).toLocaleDateString()}</p>
                                     </div>
                                 </div>
-                                <div className="flex space-x-2">
+                                <div className="flex space-x-2 self-end sm:self-center">
                                     <button onClick={() => openPostModal(post)} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
                                     <button onClick={() => handleDeletePost(post.id)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
                                 </div>
@@ -361,15 +360,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                     </div>
                     <div className="space-y-4">
                          {affiliateBanners.length > 0 ? affiliateBanners.map(banner => (
-                            <div key={banner.id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
-                                <div className="flex items-center space-x-4">
-                                    <img src={banner.imageUrl} alt={banner.name} className="h-10 w-20 object-cover rounded" />
+                            <div key={banner.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                                <div className="flex items-center space-x-4 w-full">
+                                    <img src={banner.imageUrl} alt={banner.name} className="h-10 w-20 object-cover rounded hidden sm:block" />
                                     <div>
                                         <h3 className="font-bold text-gray-800">{banner.name}</h3>
                                         <a href={banner.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline break-all">{banner.url}</a>
                                     </div>
                                 </div>
-                                <div className="flex space-x-2">
+                                <div className="flex space-x-2 self-end sm:self-center">
                                     <button onClick={() => openBannerModal(banner)} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
                                     <button onClick={() => handleDeleteBanner(banner.id)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
                                 </div>

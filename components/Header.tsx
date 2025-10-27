@@ -1,5 +1,5 @@
-import React from 'react';
-import { LogoIcon } from './icons';
+import React, { useState } from 'react';
+import { LogoIcon, MenuIcon, CloseIcon } from './icons';
 
 type View = 'editor' | 'cover-letter' | 'blog' | 'admin';
 
@@ -9,12 +9,19 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
-  const navLinkClasses = (view: View) => 
-    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navLinkClasses = (view: View, isMobile: boolean = false) => 
+    `w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
       currentView === view 
         ? 'bg-blue-600 text-white' 
-        : 'text-gray-700 hover:bg-gray-200'
+        : `text-gray-700 ${isMobile ? 'hover:bg-gray-100' : 'hover:bg-gray-200'}`
     }`;
+
+  const handleNavClick = (view: View) => {
+    setView(view);
+    setIsMobileMenuOpen(false);
+  }
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -24,19 +31,45 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
             <LogoIcon className="h-8 w-8 text-blue-600" />
             <span className="ml-2 text-xl font-bold text-gray-800">ResumeGen Free</span>
           </div>
-          <nav className="flex space-x-2 sm:space-x-4">
-            <button onClick={() => setView('editor')} className={navLinkClasses('editor')}>
+          
+          {/* Desktop Nav */}
+          <nav className="hidden sm:flex sm:space-x-4">
+            <button onClick={() => handleNavClick('editor')} className={navLinkClasses('editor')}>
               Resume
             </button>
-            <button onClick={() => setView('cover-letter')} className={navLinkClasses('cover-letter')}>
+            <button onClick={() => handleNavClick('cover-letter')} className={navLinkClasses('cover-letter')}>
               Cover Letter
             </button>
-            <button onClick={() => setView('blog')} className={navLinkClasses('blog')}>
+            <button onClick={() => handleNavClick('blog')} className={navLinkClasses('blog')}>
+              Blog
+            </button>
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <div className="sm:hidden">
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none">
+              {isMobileMenuOpen ? <CloseIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="sm:hidden bg-white shadow-lg">
+          <nav className="flex flex-col p-2 space-y-1">
+            <button onClick={() => handleNavClick('editor')} className={navLinkClasses('editor', true)}>
+              Resume
+            </button>
+            <button onClick={() => handleNavClick('cover-letter')} className={navLinkClasses('cover-letter', true)}>
+              Cover Letter
+            </button>
+            <button onClick={() => handleNavClick('blog')} className={navLinkClasses('blog', true)}>
               Blog
             </button>
           </nav>
         </div>
-      </div>
+      )}
     </header>
   );
 };

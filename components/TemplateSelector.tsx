@@ -11,7 +11,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
   return (
     <div>
       <h3 className="text-lg font-semibold mb-2 text-gray-700">Select a Template</h3>
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4">
         {TEMPLATES.map(template => (
           <button
             key={template.id}

@@ -15,6 +15,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 type View = 'editor' | 'cover-letter' | 'blog' | 'admin';
+type MobileView = 'editor' | 'preview';
 
 const App: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
@@ -25,7 +26,7 @@ const App: React.FC = () => {
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
   const [isAdModalOpen, setIsAdModalOpen] = useState(false);
   const [downloadType, setDownloadType] = useState<'resume' | 'cover-letter' | null>(null);
-
+  const [mobileView, setMobileView] = useState<MobileView>('editor');
 
   // Dynamic content state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
@@ -55,6 +56,26 @@ const App: React.FC = () => {
     localStorage.setItem('affiliateBanners', JSON.stringify(affiliateBanners));
   }, [affiliateBanners]);
   
+  // Load shared resume from URL hash
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#share=')) {
+        try {
+            const base64String = hash.substring('#share='.length);
+            const jsonString = decodeURIComponent(escape(window.atob(base64String)));
+            const sharedResumeData: ResumeData = JSON.parse(jsonString);
+
+            if (sharedResumeData && sharedResumeData.personalInfo) {
+                setResumeData(sharedResumeData);
+            }
+        } catch (error) {
+            console.error("Failed to load shared resume from URL:", error);
+        } finally {
+            window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        }
+    }
+  }, []);
+
   // URL-based routing for Admin Panel
   useEffect(() => {
     const checkHash = () => {
@@ -63,7 +84,7 @@ const App: React.FC = () => {
       }
     };
 
-    checkHash(); // Check on initial load
+    checkHash();
     window.addEventListener('hashchange', checkHash, false);
 
     return () => {
@@ -185,31 +206,40 @@ const App: React.FC = () => {
     setIsAdModalOpen(false);
     setDownloadType(null);
   };
+  
+  useEffect(() => {
+    // Reset mobile view to editor when switching main views
+    setMobileView('editor');
+  }, [view]);
 
   const renderView = () => {
     switch(view) {
       case 'editor':
         return (
           <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ResumeEditor 
-              resumeData={resumeData} 
-              onDataChange={handleDataChange}
-              onAddItem={handleAddItem}
-              onRemoveItem={handleRemoveItem}
-              templateId={templateId}
-              setTemplateId={setTemplateId}
-              themeId={themeId}
-              setThemeId={setThemeId}
-              onDownloadPdf={handleDownloadPdf}
-              formattingOptions={formattingOptions}
-              setFormattingOptions={setFormattingOptions}
-            />
-            <div className="lg:sticky top-4 self-start">
+            <div className={mobileView === 'editor' ? 'block' : 'hidden lg:block'}>
+              <ResumeEditor 
+                resumeData={resumeData} 
+                onDataChange={handleDataChange}
+                onAddItem={handleAddItem}
+                onRemoveItem={handleRemoveItem}
+                templateId={templateId}
+                setTemplateId={setTemplateId}
+                themeId={themeId}
+                setThemeId={setThemeId}
+                onDownloadPdf={handleDownloadPdf}
+                formattingOptions={formattingOptions}
+                setFormattingOptions={setFormattingOptions}
+                setMobileView={setMobileView}
+              />
+            </div>
+            <div className={`lg:sticky top-20 self-start ${mobileView === 'preview' ? 'block' : 'hidden lg:block'}`}>
               <ResumePreview 
                 resumeData={resumeData} 
                 templateId={templateId} 
                 themeId={themeId} 
                 formattingOptions={formattingOptions} 
+                setMobileView={setMobileView}
               />
             </div>
           </div>
@@ -217,6 +247,7 @@ const App: React.FC = () => {
       case 'cover-letter':
         return (
             <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className={mobileView === 'editor' ? 'block' : 'hidden lg:block'}>
                 <CoverLetterEditor 
                     coverLetterData={coverLetterData} 
                     resumeData={resumeData}
@@ -224,10 +255,16 @@ const App: React.FC = () => {
                     onDownloadPdf={handleCoverLetterDownloadPdf}
                     themeId={themeId}
                     setThemeId={setThemeId}
+                    setMobileView={setMobileView}
                 />
-                <div className="lg:sticky top-4 self-start">
-                    <CoverLetterPreview coverLetterData={coverLetterData} themeId={themeId} />
-                </div>
+              </div>
+              <div className={`lg:sticky top-20 self-start ${mobileView === 'preview' ? 'block' : 'hidden lg:block'}`}>
+                  <CoverLetterPreview 
+                    coverLetterData={coverLetterData} 
+                    themeId={themeId}
+                    setMobileView={setMobileView}
+                  />
+              </div>
             </div>
         );
       case 'blog':

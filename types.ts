@@ -53,7 +53,7 @@ export interface CoverLetterData {
   senderName: string;
 }
 
-export type TemplateId = 'classic' | 'modern' | 'creative';
+export type TemplateId = 'classic' | 'modern' | 'creative' | 'tech' | 'minimalist';
 
 export interface KeywordAnalysis {
   missingKeywords: string[];

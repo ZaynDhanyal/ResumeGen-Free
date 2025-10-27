@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CoverLetterData, ResumeData, ThemeId } from '../types';
 import AiSuggestionModal from './AiSuggestionModal';
 import ThemeSelector from './ThemeSelector';
-import { MagicIcon, DownloadIcon, BuildingIcon, PersonalInfoIcon, PaletteIcon } from './icons';
+import { MagicIcon, DownloadIcon, BuildingIcon, PersonalInfoIcon, PaletteIcon, EyeIcon } from './icons';
 
 interface CoverLetterEditorProps {
   coverLetterData: CoverLetterData;
@@ -11,9 +11,9 @@ interface CoverLetterEditorProps {
   onDownloadPdf: () => void;
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
+  setMobileView: (view: 'editor' | 'preview') => void;
 }
 
-// Reusable Section component for consistent UI
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
       <div className="flex items-center mb-4">
@@ -24,17 +24,15 @@ const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.
     </div>
   );
   
-// Reusable Input component
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
 <input {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
 );
 
-// Reusable Textarea component
 const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
 <textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" rows={15} />
 );
 
-const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId }) => {
+const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId, setMobileView }) => {
     const [modalOpen, setModalOpen] = useState(false);
   
     const handleAiClick = () => {
@@ -46,7 +44,7 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
     }
   
     return (
-      <div className="h-full overflow-y-auto pr-4">
+      <div className="h-full overflow-y-auto pr-0 lg:pr-4">
         {modalOpen && (
           <AiSuggestionModal
             type="coverLetter"
@@ -61,7 +59,7 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
         )}
 
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-6 flex-wrap">
                  <div className="w-full">
                     <div className="flex items-center mb-4">
                         <PaletteIcon className="h-6 w-6 text-blue-600" />
@@ -102,6 +100,17 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
             Generate with AI
           </button>
         </Section>
+        
+        {/* Mobile View Toggle */}
+        <div className="lg:hidden sticky bottom-4 flex justify-center">
+            <button
+                onClick={() => setMobileView('preview')}
+                className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105"
+            >
+                <EyeIcon className="h-6 w-6 mr-2" />
+                Show Preview
+            </button>
+        </div>
       </div>
     );
   };

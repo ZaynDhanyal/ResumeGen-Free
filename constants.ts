@@ -135,6 +135,8 @@ export const TEMPLATES: { id: TemplateId; name: string; imageUrl: string }[] = [
   { id: 'classic', name: 'Classic', imageUrl: 'https://picsum.photos/seed/classic-template/200/280' },
   { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/modern-template/200/280' },
   { id: 'creative', name: 'Creative', imageUrl: 'https://picsum.photos/seed/creative-template/200/280' },
+  { id: 'tech', name: 'Tech', imageUrl: 'https://picsum.photos/seed/tech-template/200/280' },
+  { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://picsum.photos/seed/minimalist-template/200/280' },
 ];
 
 export const THEMES: Theme[] = [

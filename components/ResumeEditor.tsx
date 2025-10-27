@@ -6,7 +6,7 @@ import ThemeSelector from './ThemeSelector';
 import KeywordOptimizer from './KeywordOptimizer';
 import AiSuggestionModal from './AiSuggestionModal';
 import AdsenseBlock from './AdsenseBlock';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, DeleteIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon } from './icons';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, DeleteIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon, ShareIcon, EyeIcon } from './icons';
 
 interface ResumeEditorProps {
   resumeData: ResumeData;
@@ -20,6 +20,7 @@ interface ResumeEditorProps {
   onDownloadPdf: () => void;
   formattingOptions: FormattingOptions;
   setFormattingOptions: (options: FormattingOptions) => void;
+  setMobileView: (view: 'editor' | 'preview') => void;
 }
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
@@ -41,10 +42,11 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
 );
 
 const ResumeEditor: React.FC<ResumeEditorProps> = ({
-  resumeData, onDataChange, onAddItem, onRemoveItem, templateId, setTemplateId, themeId, setThemeId, onDownloadPdf, formattingOptions, setFormattingOptions
+  resumeData, onDataChange, onAddItem, onRemoveItem, templateId, setTemplateId, themeId, setThemeId, onDownloadPdf, formattingOptions, setFormattingOptions, setMobileView
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ type: 'summary' | 'bulletPoints'; context: any; onAccept: (text: string) => void } | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleAiClick = useCallback((type: 'summary' | 'bulletPoints', context: any, onAccept: (text: string) => void) => {
     setModalConfig({ type, context, onAccept });
@@ -81,8 +83,25 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
       handleUpdateField('personalInfo', undefined, 'profilePicture', '');
   };
 
+  const handleShare = useCallback(() => {
+    try {
+      const jsonString = JSON.stringify(resumeData);
+      const base64String = window.btoa(unescape(encodeURIComponent(jsonString)));
+      const url = `${window.location.origin}${window.location.pathname}#share=${base64String}`;
+      
+      navigator.clipboard.writeText(url).then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      }, (err) => {
+        console.error('Could not copy text: ', err);
+      });
+    } catch (error) {
+      console.error("Failed to generate share link:", error);
+    }
+  }, [resumeData]);
+
   return (
-    <div className="h-full overflow-y-auto pr-4">
+    <div className="h-full overflow-y-auto pr-0 lg:pr-4">
       {modalOpen && modalConfig && (
         <AiSuggestionModal
           type={modalConfig.type}
@@ -93,15 +112,24 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
       )}
 
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
-            <TemplateSelector selected={templateId} onSelect={setTemplateId} />
-            <button
-                onClick={onDownloadPdf}
-                className="w-full sm:w-auto flex items-center justify-center px-6 py-3 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors flex-shrink-0"
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-6 flex-wrap">
+            <div className="w-full"><TemplateSelector selected={templateId} onSelect={setTemplateId} /></div>
+            <div className="flex w-full flex-col sm:flex-row sm:w-auto gap-2 flex-wrap">
+                <button
+                    onClick={handleShare}
+                    className="w-full sm:w-auto flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors"
                 >
-                <DownloadIcon className="h-5 w-5 mr-2" />
-                Download PDF
-            </button>
+                    <ShareIcon className="h-5 w-5 mr-2" />
+                    {isCopied ? 'Copied!' : 'Share'}
+                </button>
+                <button
+                    onClick={onDownloadPdf}
+                    className="w-full sm:w-auto flex items-center justify-center px-6 py-3 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors"
+                    >
+                    <DownloadIcon className="h-5 w-5 mr-2" />
+                    Download PDF
+                </button>
+            </div>
         </div>
         <div className="mt-6 border-t pt-6">
              <div className="flex items-center mb-4">
@@ -240,6 +268,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
               </div>
             </div>
             <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 p-2 float-right"><DeleteIcon className="h-5 w-5"/></button>
+
           </div>
         ))}
         <button onClick={() => onAddItem('education', { ...EMPTY_EDUCATION, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
@@ -266,6 +295,17 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
       </div>
 
       <KeywordOptimizer resumeData={resumeData}/>
+
+      {/* Mobile View Toggle */}
+      <div className="lg:hidden sticky bottom-4 flex justify-center">
+        <button
+            onClick={() => setMobileView('preview')}
+            className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105"
+        >
+            <EyeIcon className="h-6 w-6 mr-2" />
+            Show Preview
+        </button>
+      </div>
 
     </div>
   );

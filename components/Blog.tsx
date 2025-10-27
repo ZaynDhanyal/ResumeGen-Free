@@ -53,7 +53,7 @@ const Blog: React.FC<BlogProps> = ({ blogPosts, affiliateBanners }) => {
           </div>
         </main>
         
-        <aside className="space-y-8 sticky top-20 self-start">
+        <aside className="space-y-8 lg:sticky top-20 self-start">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Advertisement</h3>
             <AdsenseBlock width="w-full" height="h-60" />
