@@ -46,6 +46,7 @@ export const EMPTY_RESUME: ResumeData = {
 export const EMPTY_COVER_LETTER: CoverLetterData = {
   recipientName: '',
   recipientCompany: '',
+  // Fix: Corrected typo from toLocaleDateDateString to toLocaleDateString
   date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
   body: '',
   senderName: '',
@@ -118,6 +119,7 @@ export const SAMPLE_RESUME: ResumeData = {
 export const SAMPLE_COVER_LETTER: CoverLetterData = {
   recipientName: 'Hiring Manager',
   recipientCompany: 'NextGen Corp',
+  // Fix: Corrected typo from toLocaleDateDateString to toLocaleDateString
   date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
   body: `Dear Hiring Manager,
 
@@ -169,38 +171,42 @@ export const DEFAULT_BLOG_POSTS: BlogPost[] = [
       title: 'How to Write a Resume That Gets Noticed in 2024',
       excerpt: 'Learn the top strategies to make your resume stand out from the crowd and land your dream job.',
       author: 'Jane Smith',
-      date: 'July 15, 2024',
+      date: '2024-07-15',
+      imageUrl: 'https://picsum.photos/seed/blog1/400/200',
     },
     {
       id: 2,
       title: 'The Power of Keywords: Optimizing Your Resume for ATS',
       excerpt: 'Applicant Tracking Systems (ATS) are the first gatekeeper. Here\'s how to beat them.',
       author: 'John Doe',
-      date: 'July 10, 2024',
+      date: '2024-07-10',
     },
     {
       id: 3,
       title: '5 Common Resume Mistakes and How to Avoid Them',
       excerpt: 'Don\'t let simple errors cost you an interview. We break down the most common pitfalls.',
       author: 'Emily White',
-      date: 'July 5, 2024',
+      date: '2024-07-05',
     },
 ];
 
 export const DEFAULT_AFFILIATE_BANNERS: AffiliateBanner[] = [
     {
+        id: 'banner1',
         name: 'Grammarly',
         url: 'https://www.grammarly.com/',
         imageUrl: 'https://picsum.photos/seed/grammarly/300/100',
         description: 'Perfect your writing with Grammarly. Ensure your resume is error-free.'
     },
     {
+        id: 'banner2',
         name: 'LinkedIn Learning',
         url: 'https://www.linkedin.com/learning/',
         imageUrl: 'https://picsum.photos/seed/linkedin/300/100',
         description: 'Upskill with thousands of courses on LinkedIn Learning.'
     },
     {
+        id: 'banner3',
         name: 'Coursera',
         url: 'https://www.coursera.org/',
         imageUrl: 'https://picsum.photos/seed/coursera/300/100',

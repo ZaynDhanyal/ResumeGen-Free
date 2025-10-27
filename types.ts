@@ -87,9 +87,11 @@ export interface BlogPost {
   excerpt: string;
   author: string;
   date: string;
+  imageUrl?: string;
 }
 
 export interface AffiliateBanner {
+    id: string;
     name: string;
     url: string;
     imageUrl: string;

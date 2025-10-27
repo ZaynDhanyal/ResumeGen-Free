@@ -223,7 +223,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
             </div>
           </div>
         ))}
-        <button onClick={() => onAddItem('experience', { ...EMPTY_EXPERIENCE, id: `exp${Date.now()}` })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
+        <button onClick={() => onAddItem('experience', { ...EMPTY_EXPERIENCE, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
           <AddIcon className="h-5 w-5 mr-2" /> Add Experience
         </button>
       </Section>
@@ -242,7 +242,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
             <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 p-2 float-right"><DeleteIcon className="h-5 w-5"/></button>
           </div>
         ))}
-        <button onClick={() => onAddItem('education', { ...EMPTY_EDUCATION, id: `edu${Date.now()}` })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
+        <button onClick={() => onAddItem('education', { ...EMPTY_EDUCATION, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
           <AddIcon className="h-5 w-5 mr-2" /> Add Education
         </button>
       </Section>
@@ -256,7 +256,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
           </div>
         ))}
         </div>
-        <button onClick={() => onAddItem('skills', { ...EMPTY_SKILL, id: `skill${Date.now()}` })} className="mt-4 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
+        <button onClick={() => onAddItem('skills', { ...EMPTY_SKILL, id: crypto.randomUUID() })} className="mt-4 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">
           <AddIcon className="h-5 w-5 mr-2" /> Add Skill
         </button>
       </Section>

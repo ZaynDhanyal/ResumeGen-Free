@@ -9,6 +9,7 @@ import CoverLetterPreview from './components/CoverLetterPreview';
 import Blog from './components/Blog';
 import Footer from './components/Footer';
 import AdminPanel from './components/AdminPanel';
+import AdModal from './components/AdModal';
 import html2canvas from 'html2canvas';
 // @ts-ignore
 import { jsPDF } from 'jspdf';
@@ -22,6 +23,9 @@ const App: React.FC = () => {
   const [themeId, setThemeId] = useState<ThemeId>('default');
   const [view, setView] = useState<View>('editor');
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
+  const [isAdModalOpen, setIsAdModalOpen] = useState(false);
+  const [downloadType, setDownloadType] = useState<'resume' | 'cover-letter' | null>(null);
+
 
   // Dynamic content state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
@@ -154,13 +158,33 @@ const App: React.FC = () => {
     });
   }, []);
 
+  const sanitizeFilename = (name: string) => {
+    return name.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'document';
+  }
+
   const handleDownloadPdf = useCallback(() => {
-    downloadPdf('resume-preview', 'Resume-ResumeGenFree.pdf');
-  }, [downloadPdf]);
+    setDownloadType('resume');
+    setIsAdModalOpen(true);
+  }, []);
 
   const handleCoverLetterDownloadPdf = useCallback(() => {
-    downloadPdf('cover-letter-preview', 'CoverLetter-ResumeGenFree.pdf');
-  }, [downloadPdf]);
+    setDownloadType('cover-letter');
+    setIsAdModalOpen(true);
+  }, []);
+
+  const handleConfirmDownload = () => {
+    if (downloadType === 'resume') {
+        const name = resumeData.personalInfo.fullName;
+        const filename = `Resume-${sanitizeFilename(name)}.pdf`;
+        downloadPdf('resume-preview', filename);
+    } else if (downloadType === 'cover-letter') {
+        const name = coverLetterData.senderName;
+        const filename = `CoverLetter-${sanitizeFilename(name)}.pdf`;
+        downloadPdf('cover-letter-preview', filename);
+    }
+    setIsAdModalOpen(false);
+    setDownloadType(null);
+  };
 
   const renderView = () => {
     switch(view) {
@@ -222,6 +246,14 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
+      <AdModal 
+        isOpen={isAdModalOpen}
+        onClose={() => {
+            setIsAdModalOpen(false);
+            setDownloadType(null);
+        }}
+        onConfirm={handleConfirmDownload}
+      />
       <Header currentView={view} setView={setView} />
       <main className="flex-grow w-full">
         {renderView()}

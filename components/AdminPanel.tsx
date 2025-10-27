@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BlogPost, AffiliateBanner } from '../types';
 import { PRE_CONFIGURED_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '../constants';
-import { LockClosedIcon, PencilIcon, TrashIcon, AddIcon, ExternalLinkIcon, LogoutIcon, MailIcon } from './icons';
+import { LockClosedIcon, PencilIcon, TrashIcon, AddIcon, ExternalLinkIcon, LogoutIcon, MailIcon, CloseIcon } from './icons';
 
 interface AdminPanelProps {
     blogPosts: BlogPost[];
@@ -12,8 +12,12 @@ interface AdminPanelProps {
 
 type AdminTab = 'blog' | 'affiliates' | 'adsense';
 type AdminAuthView = 'login' | 'forgot' | 'reset';
+type ValidationErrors = { [key: string]: string };
 
 const getAdminPassword = (): string => {
+    // SECURITY NOTE: This is for a client-side only application. In a real-world scenario,
+    // authentication should be handled by a secure backend service, not by storing
+    // a password in localStorage.
     try {
         return localStorage.getItem('adminPassword') || DEFAULT_ADMIN_PASSWORD;
     } catch {
@@ -21,23 +25,27 @@ const getAdminPassword = (): string => {
     }
 };
 
-const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
+const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string }> = ({ label, id, error, ...props }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <input {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+        <input id={id} {...props} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition ${error ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`} />
+        {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
 );
 
-const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
+const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; error?: string }> = ({ label, id, error, ...props }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" rows={4} />
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+        <textarea id={id} {...props} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition ${error ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`} rows={4} />
+        {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
 );
+
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affiliateBanners, setAffiliateBanners }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [activeTab, setActiveTab] = useState<AdminTab>('blog');
+    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
     // --- Auth State ---
     const [authView, setAuthView] = useState<AdminAuthView>('login');
@@ -46,72 +54,81 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
     const [tokenInput, setTokenInput] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-    const [message, setMessage] = useState('');
+    const [authError, setAuthError] = useState('');
+    const [authMessage, setAuthMessage] = useState('');
 
-    // --- Blog State ---
-    const [newPost, setNewPost] = useState<Omit<BlogPost, 'id'>>({ title: '', excerpt: '', author: '', date: '' });
-    
-    // --- Affiliate State ---
-    const [newBanner, setNewBanner] = useState<AffiliateBanner>({ name: '', url: '', imageUrl: '', description: '' });
+    // --- Modals and Editing State ---
+    const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+    const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+
+    const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
+    const [editingBanner, setEditingBanner] = useState<AffiliateBanner | null>(null);
 
     useEffect(() => {
         if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
             setIsAuthenticated(true);
         }
     }, []);
+
+    const validateUrl = (url: string) => {
+        try {
+            new URL(url);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
     
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         if (passwordInput === getAdminPassword()) {
             setIsAuthenticated(true);
             sessionStorage.setItem('isAdminAuthenticated', 'true');
-            setError('');
+            setAuthError('');
         } else {
-            setError('Invalid password. Please try again.');
+            setAuthError('Invalid password. Please try again.');
         }
     };
     
     const handleForgotPasswordRequest = (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setMessage('');
+        setAuthError('');
+        setAuthMessage('');
         if (emailInput.toLowerCase() === PRE_CONFIGURED_ADMIN_EMAIL.toLowerCase()) {
             const token = Math.random().toString(36).substring(2, 10);
             sessionStorage.setItem('resetToken', token);
-            setMessage(`A reset token has been generated: ${token}\nPlease use it on the next screen.`);
-            // In a real app, you'd email the token and direct to a URL. Here we simulate.
+            setAuthMessage(`A reset token has been generated: ${token}\nPlease use it on the next screen.`);
             setTimeout(() => {
                 setAuthView('reset');
-                setMessage('');
-            }, 5000); // Give user time to see the token
+                setAuthMessage('');
+            }, 5000);
         } else {
-            setError('The provided email does not match the configured admin email.');
+            setAuthError('The provided email does not match the configured admin email.');
         }
     };
 
     const handlePasswordReset = (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setMessage('');
+        setAuthError('');
+        setAuthMessage('');
         const storedToken = sessionStorage.getItem('resetToken');
 
         if (!tokenInput || tokenInput !== storedToken) {
-            setError('Invalid or expired token.');
+            setAuthError('Invalid or expired token.');
             return;
         }
         if (newPassword.length < 6) {
-            setError('Password must be at least 6 characters long.');
+            setAuthError('Password must be at least 6 characters long.');
             return;
         }
         if (newPassword !== confirmPassword) {
-            setError('Passwords do not match.');
+            setAuthError('Passwords do not match.');
             return;
         }
 
         localStorage.setItem('adminPassword', newPassword);
         sessionStorage.removeItem('resetToken');
-        setMessage('Password reset successfully! Please log in with your new password.');
+        setAuthMessage('Password reset successfully! Please log in with your new password.');
         setAuthView('login');
     };
 
@@ -121,10 +138,31 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
         setPasswordInput('');
     };
 
-    const handleAddPost = (e: React.FormEvent) => {
-        e.preventDefault();
-        setBlogPosts(prev => [...prev, { ...newPost, id: Date.now() }]);
-        setNewPost({ title: '', excerpt: '', author: '', date: '' });
+    const openPostModal = (post: BlogPost | null) => {
+        setEditingPost(post ? { ...post } : { id: 0, title: '', excerpt: '', author: '', date: '', imageUrl: '' });
+        setIsPostModalOpen(true);
+        setValidationErrors({});
+    };
+
+    const handlePostSave = () => {
+        const errors: ValidationErrors = {};
+        if (!editingPost?.title) errors.title = "Title is required.";
+        if (!editingPost?.author) errors.author = "Author is required.";
+        if (!editingPost?.date) errors.date = "Date is required.";
+        if (!editingPost?.excerpt) errors.excerpt = "Excerpt is required.";
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
+
+        if (editingPost!.id === 0) { // Adding new
+            setBlogPosts(prev => [...prev, { ...editingPost!, id: Date.now() }]);
+        } else { // Updating existing
+            setBlogPosts(prev => prev.map(p => p.id === editingPost!.id ? editingPost! : p));
+        }
+        setIsPostModalOpen(false);
+        setEditingPost(null);
     };
 
     const handleDeletePost = (id: number) => {
@@ -133,19 +171,55 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
         }
     };
     
-    const handleAddBanner = (e: React.FormEvent) => {
-        e.preventDefault();
-        setAffiliateBanners(prev => [...prev, newBanner]);
-        setNewBanner({ name: '', url: '', imageUrl: '', description: '' });
-    }
+    const openBannerModal = (banner: AffiliateBanner | null) => {
+        setEditingBanner(banner ? { ...banner } : { id: '', name: '', url: '', imageUrl: '', description: '' });
+        setIsBannerModalOpen(true);
+        setValidationErrors({});
+    };
 
-    const handleDeleteBanner = (name: string) => {
+    const handleBannerSave = () => {
+        const errors: ValidationErrors = {};
+        if (!editingBanner?.name) errors.name = "Name is required.";
+        if (editingBanner?.id === '' && affiliateBanners.some(b => b.name === editingBanner.name)) {
+            errors.name = "A banner with this name already exists.";
+        }
+        if (!editingBanner?.url || !validateUrl(editingBanner.url)) errors.url = "A valid URL is required.";
+        if (!editingBanner?.imageUrl) errors.imageUrl = "Image is required.";
+        if (!editingBanner?.description) errors.description = "Description is required.";
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
+
+        if (editingBanner!.id === '') { // Adding new
+            setAffiliateBanners(prev => [...prev, { ...editingBanner!, id: crypto.randomUUID() }]);
+        } else { // Updating existing
+            setAffiliateBanners(prev => prev.map(b => b.id === editingBanner!.id ? editingBanner! : b));
+        }
+        setIsBannerModalOpen(false);
+        setEditingBanner(null);
+    };
+
+    const handleDeleteBanner = (id: string) => {
         if (window.confirm('Are you sure you want to delete this banner?')) {
-            setAffiliateBanners(prev => prev.filter(banner => banner.name !== name));
+            setAffiliateBanners(prev => prev.filter(banner => banner.id !== id));
         }
     }
+    
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (field: string, value: any) => void) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setter('imageUrl', reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const renderAuthForms = () => {
+        // ... (rest of renderAuthForms remains the same, but using authError and authMessage)
         switch (authView) {
             case 'forgot':
                 return (
@@ -156,13 +230,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                             <p className="text-gray-500 text-sm mt-1">Enter your admin email to receive a reset token.</p>
                         </div>
                         <form onSubmit={handleForgotPasswordRequest}>
-                            <Input label="Admin Email" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} required />
-                            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                            {message && <p className="text-green-600 bg-green-50 p-3 rounded-md text-sm mt-2">{message}</p>}
+                            <Input label="Admin Email" id="email" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} required />
+                            {authError && <p className="text-red-500 text-sm mt-2">{authError}</p>}
+                            {authMessage && <p className="text-green-600 bg-green-50 p-3 rounded-md text-sm mt-2">{authMessage}</p>}
                             <button type="submit" className="mt-6 w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
                                 Send Reset Token
                             </button>
-                            <button onClick={() => { setAuthView('login'); setError('') }} type="button" className="mt-2 w-full text-center text-sm text-blue-600 hover:underline">
+                            <button onClick={() => { setAuthView('login'); setAuthError('') }} type="button" className="mt-2 w-full text-center text-sm text-blue-600 hover:underline">
                                 Back to Login
                             </button>
                         </form>
@@ -177,14 +251,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                             <p className="text-gray-500 text-sm mt-1">Enter the token and your new password.</p>
                         </div>
                         <form onSubmit={handlePasswordReset} className="space-y-4">
-                            <Input label="Reset Token" type="text" value={tokenInput} onChange={e => setTokenInput(e.target.value)} required />
-                            <Input label="New Password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
-                            <Input label="Confirm New Password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-                            {error && <p className="text-red-500 text-sm">{error}</p>}
+                            <Input label="Reset Token" id="token" type="text" value={tokenInput} onChange={e => setTokenInput(e.target.value)} required />
+                            <Input label="New Password" id="new-password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                            <Input label="Confirm New Password" id="confirm-password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                            {authError && <p className="text-red-500 text-sm">{authError}</p>}
                             <button type="submit" className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
                                 Set New Password
                             </button>
-                             <button onClick={() => { setAuthView('login'); setError('') }} type="button" className="mt-2 w-full text-center text-sm text-blue-600 hover:underline">
+                             <button onClick={() => { setAuthView('login'); setAuthError('') }} type="button" className="mt-2 w-full text-center text-sm text-blue-600 hover:underline">
                                 Back to Login
                             </button>
                         </form>
@@ -199,14 +273,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                             <h1 className="text-2xl font-bold mt-4 text-gray-800">Admin Panel Access</h1>
                         </div>
                         <form onSubmit={handleLogin}>
-                            <Input label="Password" type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} required />
-                            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                            {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
+                            <Input label="Password" id="password" type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} required />
+                            {authError && <p className="text-red-500 text-sm mt-2">{authError}</p>}
+                            {authMessage && <p className="text-green-600 text-sm mt-2">{authMessage}</p>}
                             <button type="submit" className="mt-6 w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
                                 Login
                             </button>
                             <div className="text-center mt-4">
-                                <button onClick={() => { setAuthView('forgot'); setError('') }} type="button" className="text-sm text-blue-600 hover:underline">
+                                <button onClick={() => { setAuthView('forgot'); setAuthError('') }} type="button" className="text-sm text-blue-600 hover:underline">
                                     Forgot Password?
                                 </button>
                             </div>
@@ -215,6 +289,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                 );
         }
     };
+
 
     if (!isAuthenticated) {
         return (
@@ -240,60 +315,53 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                     Logout
                 </button>
             </div>
-            <div className="flex space-x-2 mb-6">
+            <div className="flex space-x-2 mb-6 border-b">
                 <button onClick={() => setActiveTab('blog')} className={tabButtonClasses('blog')}>Blog Posts</button>
                 <button onClick={() => setActiveTab('affiliates')} className={tabButtonClasses('affiliates')}>Affiliate Banners</button>
                 <button onClick={() => setActiveTab('adsense')} className={tabButtonClasses('adsense')}>AdSense</button>
             </div>
 
+            {/* BLOG POSTS TAB */}
             {activeTab === 'blog' && (
                 <div>
-                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                        <h2 className="text-xl font-bold mb-4">Add New Blog Post</h2>
-                        <form onSubmit={handleAddPost} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input label="Title" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} required />
-                            <Input label="Author" value={newPost.author} onChange={e => setNewPost({...newPost, author: e.target.value})} required />
-                            <Input label="Date" type="date" value={newPost.date} onChange={e => setNewPost({...newPost, date: e.target.value})} required />
-                            <Textarea label="Excerpt" value={newPost.excerpt} onChange={e => setNewPost({...newPost, excerpt: e.target.value})} required className="md:col-span-2" />
-                            <button type="submit" className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700">
-                                <AddIcon className="h-5 w-5 mr-2" /> Add Post
-                            </button>
-                        </form>
+                    <div className="flex justify-end mb-4">
+                        <button onClick={() => openPostModal(null)} className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700">
+                            <AddIcon className="h-5 w-5 mr-2" /> Add New Post
+                        </button>
                     </div>
                     <div className="space-y-4">
-                        {blogPosts.map(post => (
+                        {blogPosts.length > 0 ? blogPosts.map(post => (
                             <div key={post.id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
-                                <div>
-                                    <h3 className="font-bold text-gray-800">{post.title}</h3>
-                                    <p className="text-sm text-gray-600">by {post.author} on {post.date}</p>
+                                <div className="flex items-center gap-4">
+                                    {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="h-12 w-20 object-cover rounded"/>}
+                                    <div>
+                                        <h3 className="font-bold text-gray-800">{post.title}</h3>
+                                        <p className="text-sm text-gray-600">by {post.author} on {new Date(post.date).toLocaleDateString()}</p>
+                                    </div>
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button onClick={() => alert("Edit functionality is a great next step!")} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
+                                    <button onClick={() => openPostModal(post)} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
                                     <button onClick={() => handleDeletePost(post.id)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <p className="text-center text-gray-500 py-8">No blog posts found. Add one to get started!</p>
+                        )}
                     </div>
                 </div>
             )}
             
+            {/* AFFILIATE BANNERS TAB */}
             {activeTab === 'affiliates' && (
                  <div>
-                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                        <h2 className="text-xl font-bold mb-4">Add New Affiliate Banner</h2>
-                        <form onSubmit={handleAddBanner} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input label="Name" value={newBanner.name} onChange={e => setNewBanner({...newBanner, name: e.target.value})} required />
-                            <Input label="Target URL" type="url" value={newBanner.url} onChange={e => setNewBanner({...newBanner, url: e.target.value})} required />
-                            <Input label="Image URL" type="url" value={newBanner.imageUrl} onChange={e => setNewBanner({...newBanner, imageUrl: e.target.value})} required className="md:col-span-2" />
-                            <Textarea label="Description" value={newBanner.description} onChange={e => setNewBanner({...newBanner, description: e.target.value})} required className="md:col-span-2" />
-                            <button type="submit" className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700">
-                                <AddIcon className="h-5 w-5 mr-2" /> Add Banner
-                            </button>
-                        </form>
+                    <div className="flex justify-end mb-4">
+                        <button onClick={() => openBannerModal(null)} className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700">
+                            <AddIcon className="h-5 w-5 mr-2" /> Add New Banner
+                        </button>
                     </div>
                     <div className="space-y-4">
-                        {affiliateBanners.map(banner => (
-                            <div key={banner.name} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
+                         {affiliateBanners.length > 0 ? affiliateBanners.map(banner => (
+                            <div key={banner.id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
                                 <div className="flex items-center space-x-4">
                                     <img src={banner.imageUrl} alt={banner.name} className="h-10 w-20 object-cover rounded" />
                                     <div>
@@ -302,11 +370,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button onClick={() => alert("Edit functionality is a great next step!")} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
-                                    <button onClick={() => handleDeleteBanner(banner.name)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
+                                    <button onClick={() => openBannerModal(banner)} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
+                                    <button onClick={() => handleDeleteBanner(banner.id)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <p className="text-center text-gray-500 py-8">No affiliate banners found. Add one to get started!</p>
+                        )}
                     </div>
                  </div>
             )}
@@ -321,15 +391,57 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                         <ExternalLinkIcon className="h-5 w-5 mr-2" />
                         Go to AdSense Dashboard
                     </a>
-                    <div className="mt-6 border-t pt-6">
-                        <h3 className="text-lg font-semibold">Ad Placement in This App</h3>
-                        <p className="text-sm text-gray-600 mt-2">Ad slots are currently placed in the following locations:</p>
-                        <ul className="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
-                            <li>Right sidebar on the Blog page.</li>
-                            <li>In-line between blog posts.</li>
-                            <li>Footer of all pages.</li>
-                            <li>Bottom of the Resume Editor sidebar.</li>
-                        </ul>
+                </div>
+            )}
+            
+            {/* Blog Post Modal */}
+            {isPostModalOpen && editingPost && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                        <div className="p-4 border-b flex justify-between items-center">
+                            <h3 className="text-lg font-bold">{editingPost.id === 0 ? 'Add New Post' : 'Edit Post'}</h3>
+                            <button onClick={() => setIsPostModalOpen(false)}><CloseIcon className="h-6 w-6" /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                             <Input id="post-title" label="Title" value={editingPost.title} onChange={e => setEditingPost({...editingPost, title: e.target.value})} error={validationErrors.title} />
+                             <Input id="post-author" label="Author" value={editingPost.author} onChange={e => setEditingPost({...editingPost, author: e.target.value})} error={validationErrors.author}/>
+                             <Input id="post-date" label="Date" type="date" value={editingPost.date} onChange={e => setEditingPost({...editingPost, date: e.target.value})} error={validationErrors.date}/>
+                             <Textarea id="post-excerpt" label="Excerpt" value={editingPost.excerpt} onChange={e => setEditingPost({...editingPost, excerpt: e.target.value})} error={validationErrors.excerpt}/>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+                                {editingPost.imageUrl && <img src={editingPost.imageUrl} alt="preview" className="h-20 rounded mb-2"/>}
+                                <input type="file" accept="image/*" onChange={e => handleImageUpload(e, (field, value) => setEditingPost({...editingPost, [field]: value}))} />
+                             </div>
+                        </div>
+                        <div className="p-4 bg-gray-50 flex justify-end">
+                            <button onClick={handlePostSave} className="px-6 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Save Post</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Affiliate Banner Modal */}
+            {isBannerModalOpen && editingBanner && (
+                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                        <div className="p-4 border-b flex justify-between items-center">
+                            <h3 className="text-lg font-bold">{editingBanner.id === '' ? 'Add New Banner' : 'Edit Banner'}</h3>
+                            <button onClick={() => setIsBannerModalOpen(false)}><CloseIcon className="h-6 w-6" /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                           <Input id="banner-name" label="Name" value={editingBanner.name} onChange={e => setEditingBanner({...editingBanner, name: e.target.value})} error={validationErrors.name}/>
+                           <Input id="banner-url" label="Target URL" type="url" value={editingBanner.url} onChange={e => setEditingBanner({...editingBanner, url: e.target.value})} error={validationErrors.url}/>
+                           <Textarea id="banner-desc" label="Description" value={editingBanner.description} onChange={e => setEditingBanner({...editingBanner, description: e.target.value})} error={validationErrors.description}/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Banner Image</label>
+                                {editingBanner.imageUrl && <img src={editingBanner.imageUrl} alt="preview" className="h-20 rounded mb-2"/>}
+                                <input id="banner-image" type="file" accept="image/*" onChange={e => handleImageUpload(e, (field, value) => setEditingBanner({...editingBanner, [field]: value}))} />
+                                {validationErrors.imageUrl && <p className="text-red-600 text-xs mt-1">{validationErrors.imageUrl}</p>}
+                            </div>
+                        </div>
+                        <div className="p-4 bg-gray-50 flex justify-end">
+                            <button onClick={handleBannerSave} className="px-6 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Save Banner</button>
+                        </div>
                     </div>
                 </div>
             )}

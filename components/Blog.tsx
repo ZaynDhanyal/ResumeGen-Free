@@ -21,13 +21,18 @@ const Blog: React.FC<BlogProps> = ({ blogPosts, affiliateBanners }) => {
           <div className="space-y-12">
             {blogPosts.map((post, index) => (
               <React.Fragment key={post.id}>
-                <article className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{post.title}</h2>
-                  <div className="text-sm text-gray-500 mb-4">
-                    <span>By {post.author}</span> | <span>{post.date}</span>
+                <article className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                  {post.imageUrl && (
+                    <img src={post.imageUrl} alt={post.title} className="w-full h-56 object-cover" />
+                  )}
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{post.title}</h2>
+                    <div className="text-sm text-gray-500 mb-4">
+                      <span>By {post.author}</span> | <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    </div>
+                    <p className="text-gray-700 mb-4">{post.excerpt}</p>
+                    <a href="#" className="font-semibold text-blue-600 hover:text-blue-800 transition-colors">Read More &rarr;</a>
                   </div>
-                  <p className="text-gray-700 mb-4">{post.excerpt}</p>
-                  <a href="#" className="font-semibold text-blue-600 hover:text-blue-800 transition-colors">Read More &rarr;</a>
                 </article>
                 
                 {/* Insert ad after the first post */}
@@ -57,7 +62,7 @@ const Blog: React.FC<BlogProps> = ({ blogPosts, affiliateBanners }) => {
             <h3 className="text-xl font-bold text-gray-800 mb-4">Our Partners</h3>
             <div className="space-y-4">
               {affiliateBanners.slice(0, 2).map(banner => (
-                <AffiliateBanner key={banner.name} {...banner} />
+                <AffiliateBanner key={banner.id} {...banner} />
               ))}
             </div>
           </div>
