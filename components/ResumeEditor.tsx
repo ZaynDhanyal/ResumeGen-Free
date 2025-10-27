@@ -6,7 +6,7 @@ import ThemeSelector from './ThemeSelector';
 import KeywordOptimizer from './KeywordOptimizer';
 import AiSuggestionModal from './AiSuggestionModal';
 import AdsenseBlock from './AdsenseBlock';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, DeleteIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon } from './icons';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, DeleteIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon } from './icons';
 
 interface ResumeEditorProps {
   resumeData: ResumeData;
@@ -64,6 +64,22 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
     const updatedData = { ...sectionData, [field]: value };
     onDataChange(section, updatedData, index);
   }, [resumeData, onDataChange]);
+  
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result as string;
+            handleUpdateField('personalInfo', undefined, 'profilePicture', base64String);
+        };
+        reader.readAsDataURL(file);
+    }
+  };
+
+  const removeProfilePicture = () => {
+      handleUpdateField('personalInfo', undefined, 'profilePicture', '');
+  };
 
   return (
     <div className="h-full overflow-y-auto pr-4">
@@ -138,13 +154,36 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
 
       <Section title="Personal Info" icon={<PersonalInfoIcon className="h-6 w-6 text-blue-600" />}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input placeholder="e.g., John Doe" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
-          <Input placeholder="e.g., Senior Software Engineer" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
-          <Input placeholder="e.g., john.doe@example.com" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
-          <Input placeholder="e.g., (123) 456-7890" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
-          <Input placeholder="e.g., San Francisco, CA" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
-          <Input placeholder="e.g., linkedin.com/in/johndoe" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
-          <Input placeholder="e.g., johndoe.dev" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
+          <Input placeholder="Full Name" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
+          <Input placeholder="Job Title" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
+          <Input placeholder="Email Address" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
+          <Input placeholder="Phone Number" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
+          <Input placeholder="City, State" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
+          <Input placeholder="LinkedIn Profile URL" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
+          <Input placeholder="Personal Website/Portfolio" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
+        </div>
+        <div className="mt-4 pt-4 border-t">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+            <div className="flex items-center gap-4">
+                {resumeData.personalInfo.profilePicture && (
+                    <div className="relative flex-shrink-0">
+                        <img src={resumeData.personalInfo.profilePicture} alt="Profile Preview" className="h-20 w-20 rounded-full object-cover" />
+                        <button 
+                            onClick={removeProfilePicture} 
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 leading-none hover:bg-red-600"
+                            title="Remove picture"
+                        >
+                            <XCircleIcon className="h-5 w-5" />
+                        </button>
+                    </div>
+                )}
+                <input 
+                    type="file" 
+                    accept="image/png, image/jpeg" 
+                    onChange={handleImageUpload} 
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+            </div>
         </div>
       </Section>
       
@@ -163,12 +202,12 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         {resumeData.experience.map((exp, index) => (
           <div key={exp.id} className="p-4 border rounded-md mb-4 bg-gray-50">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Input placeholder="e.g., Senior Frontend Developer" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
-              <Input placeholder="e.g., Tech Solutions Inc." value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
-              <Input placeholder="e.g., San Francisco, CA" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
+              <Input placeholder="Job Title" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
+              <Input placeholder="Company Name" value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
+              <Input placeholder="City, State" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
               <div className="flex gap-4">
-                <Input placeholder="e.g., Jan 2020" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
-                <Input placeholder="e.g., Present" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
+                <Input placeholder="Start Date (e.g., Jan 2020)" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
+                <Input placeholder="End Date (e.g., Present)" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
               </div>
             </div>
             <Textarea placeholder="Describe your responsibilities and achievements in bullet points. e.g., • Led the development of a new client-facing dashboard..." value={exp.description} onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} />
@@ -193,11 +232,11 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         {resumeData.education.map((edu, index) => (
           <div key={edu.id} className="p-4 border rounded-md mb-4 bg-gray-50">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Input placeholder="e.g., B.S. in Computer Science" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
-              <Input placeholder="e.g., State University" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
+              <Input placeholder="Degree or Field of Study" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
+              <Input placeholder="Institution Name" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
               <div className="flex gap-4">
-                <Input placeholder="e.g., Sep 2013" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
-                <Input placeholder="e.g., May 2017" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
+                <Input placeholder="Start Date (e.g., Sep 2013)" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
+                <Input placeholder="End Date (e.g., May 2017)" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
               </div>
             </div>
             <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 p-2 float-right"><DeleteIcon className="h-5 w-5"/></button>
@@ -212,7 +251,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {resumeData.skills.map((skill, index) => (
           <div key={skill.id} className="flex items-center bg-gray-50 p-2 border rounded-md">
-            <Input placeholder="e.g., React" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
+            <Input placeholder="Skill (e.g., React)" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
             <button onClick={() => onRemoveItem('skills', index)} className="ml-2 text-red-500 hover:text-red-700 p-1"><DeleteIcon className="h-4 w-4"/></button>
           </div>
         ))}

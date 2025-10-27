@@ -1,14 +1,15 @@
-
 import React from 'react';
 import { LogoIcon } from './icons';
 
+type View = 'editor' | 'cover-letter' | 'blog' | 'admin';
+
 interface HeaderProps {
-  currentView: 'editor' | 'cover-letter' | 'blog';
-  setView: (view: 'editor' | 'cover-letter' | 'blog') => void;
+  currentView: View;
+  setView: (view: View) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
-  const navLinkClasses = (view: 'editor' | 'cover-letter' | 'blog') => 
+  const navLinkClasses = (view: View) => 
     `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
       currentView === view 
         ? 'bg-blue-600 text-white' 
@@ -23,9 +24,9 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
             <LogoIcon className="h-8 w-8 text-blue-600" />
             <span className="ml-2 text-xl font-bold text-gray-800">ResumeGen Free</span>
           </div>
-          <nav className="flex space-x-4">
+          <nav className="flex space-x-2 sm:space-x-4">
             <button onClick={() => setView('editor')} className={navLinkClasses('editor')}>
-              Resume Editor
+              Resume
             </button>
             <button onClick={() => setView('cover-letter')} className={navLinkClasses('cover-letter')}>
               Cover Letter

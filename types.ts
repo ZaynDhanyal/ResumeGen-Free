@@ -8,6 +8,7 @@ export interface PersonalInfo {
   address: string;
   linkedin: string;
   website: string;
+  profilePicture: string;
 }
 
 export interface Experience {
@@ -78,4 +79,19 @@ export type LineHeight = 'sm' | 'md' | 'lg';
 export interface FormattingOptions {
   fontFamily: FontFamily;
   lineHeight: LineHeight;
+}
+
+export interface BlogPost {
+  id: number;
+  title: string;
+  excerpt: string;
+  author: string;
+  date: string;
+}
+
+export interface AffiliateBanner {
+    name: string;
+    url: string;
+    imageUrl: string;
+    description: string;
 }

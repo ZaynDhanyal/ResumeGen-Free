@@ -1,10 +1,14 @@
 import React from 'react';
-import { BLOG_POSTS } from '../constants';
+import { BlogPost, AffiliateBanner as AffiliateBannerType } from '../types';
 import AdsenseBlock from './AdsenseBlock';
 import AffiliateBanner from './AffiliateBanner';
-import { AFFILIATE_BANNERS } from '../constants';
 
-const Blog: React.FC = () => {
+interface BlogProps {
+    blogPosts: BlogPost[];
+    affiliateBanners: AffiliateBannerType[];
+}
+
+const Blog: React.FC<BlogProps> = ({ blogPosts, affiliateBanners }) => {
   return (
     <div className="container mx-auto p-4 lg:p-8">
       <header className="text-center mb-12">
@@ -15,7 +19,7 @@ const Blog: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <main className="lg:col-span-2">
           <div className="space-y-12">
-            {BLOG_POSTS.map((post, index) => (
+            {blogPosts.map((post, index) => (
               <React.Fragment key={post.id}>
                 <article className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">{post.title}</h2>
@@ -35,6 +39,12 @@ const Blog: React.FC = () => {
                 )}
               </React.Fragment>
             ))}
+             {blogPosts.length === 0 && (
+                <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">No Posts Yet</h2>
+                    <p className="text-gray-600">Check back later for more content!</p>
+                </div>
+            )}
           </div>
         </main>
         
@@ -46,7 +56,7 @@ const Blog: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Our Partners</h3>
             <div className="space-y-4">
-              {AFFILIATE_BANNERS.slice(0, 2).map(banner => (
+              {affiliateBanners.slice(0, 2).map(banner => (
                 <AffiliateBanner key={banner.name} {...banner} />
               ))}
             </div>

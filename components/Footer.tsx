@@ -2,9 +2,13 @@
 import React from 'react';
 import AdsenseBlock from './AdsenseBlock';
 import AffiliateBanner from './AffiliateBanner';
-import { AFFILIATE_BANNERS } from '../constants';
+import { AffiliateBanner as AffiliateBannerType } from '../types';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+    affiliateBanners: AffiliateBannerType[];
+}
+
+const Footer: React.FC<FooterProps> = ({ affiliateBanners }) => {
   return (
     <footer className="bg-gray-800 text-white mt-12">
       <div className="container mx-auto px-4 py-8">
@@ -12,7 +16,7 @@ const Footer: React.FC = () => {
           <div className="lg:col-span-2">
             <h3 className="text-lg font-semibold mb-4">Our Partners</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {AFFILIATE_BANNERS.map(banner => (
+                {affiliateBanners.map(banner => (
                     <AffiliateBanner key={banner.name} {...banner} />
                 ))}
             </div>

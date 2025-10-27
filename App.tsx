@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions } from './types';
-import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING } from './constants';
+import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner } from './types';
+import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS } from './constants';
 import Header from './components/Header';
 import ResumeEditor from './components/ResumeEditor';
 import ResumePreview from './components/ResumePreview';
@@ -8,11 +8,12 @@ import CoverLetterEditor from './components/CoverLetterEditor';
 import CoverLetterPreview from './components/CoverLetterPreview';
 import Blog from './components/Blog';
 import Footer from './components/Footer';
+import AdminPanel from './components/AdminPanel';
 import html2canvas from 'html2canvas';
 // @ts-ignore
 import { jsPDF } from 'jspdf';
 
-type View = 'editor' | 'cover-letter' | 'blog';
+type View = 'editor' | 'cover-letter' | 'blog' | 'admin';
 
 const App: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
@@ -22,7 +23,52 @@ const App: React.FC = () => {
   const [view, setView] = useState<View>('editor');
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
 
-  // Sync senderName with resume fullName on initial load and when fullName changes
+  // Dynamic content state
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
+    try {
+      const saved = localStorage.getItem('blogPosts');
+      return saved ? JSON.parse(saved) : DEFAULT_BLOG_POSTS;
+    } catch {
+      return DEFAULT_BLOG_POSTS;
+    }
+  });
+
+  const [affiliateBanners, setAffiliateBanners] = useState<AffiliateBanner[]>(() => {
+    try {
+      const saved = localStorage.getItem('affiliateBanners');
+      return saved ? JSON.parse(saved) : DEFAULT_AFFILIATE_BANNERS;
+    } catch {
+      return DEFAULT_AFFILIATE_BANNERS;
+    }
+  });
+
+  // Persist dynamic content to localStorage
+  useEffect(() => {
+    localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
+  }, [blogPosts]);
+
+  useEffect(() => {
+    localStorage.setItem('affiliateBanners', JSON.stringify(affiliateBanners));
+  }, [affiliateBanners]);
+  
+  // URL-based routing for Admin Panel
+  useEffect(() => {
+    const checkHash = () => {
+      if (window.location.hash === '#admin') {
+        setView('admin');
+      }
+    };
+
+    checkHash(); // Check on initial load
+    window.addEventListener('hashchange', checkHash, false);
+
+    return () => {
+      window.removeEventListener('hashchange', checkHash, false);
+    };
+  }, []);
+
+
+  // Sync senderName with resume fullName
   useEffect(() => {
     setCoverLetterData(prev => ({
       ...prev,
@@ -72,7 +118,7 @@ const App: React.FC = () => {
     }
 
     html2canvas(element, {
-      scale: 2, // Balanced quality and performance
+      scale: 2,
       useCORS: true,
       backgroundColor: null,
     }).then(canvas => {
@@ -92,11 +138,10 @@ const App: React.FC = () => {
       const ratio = canvasWidth / pdfWidth;
       const totalImageHeight = canvasHeight / ratio;
 
-      let heightLeft = totalImageHeight;
       let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, totalImageHeight);
-      heightLeft -= pdfHeight;
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, Math.min(totalImageHeight, pdfHeight));
+      let heightLeft = totalImageHeight - pdfHeight;
 
       while (heightLeft > 0) {
         position -= pdfHeight;
@@ -162,7 +207,14 @@ const App: React.FC = () => {
             </div>
         );
       case 'blog':
-        return <Blog />;
+        return <Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />;
+      case 'admin':
+        return <AdminPanel
+                  blogPosts={blogPosts}
+                  setBlogPosts={setBlogPosts}
+                  affiliateBanners={affiliateBanners}
+                  setAffiliateBanners={setAffiliateBanners}
+                />;
       default:
         return null;
     }
@@ -174,7 +226,7 @@ const App: React.FC = () => {
       <main className="flex-grow w-full">
         {renderView()}
       </main>
-      <Footer />
+      <Footer affiliateBanners={affiliateBanners} />
     </div>
   );
 };
