@@ -13,7 +13,7 @@ const skillLevelToPercentage = (level: 'Beginner' | 'Intermediate' | 'Advanced' 
 };
 
 const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
-    const { personalInfo, summary, experience, education, skills } = data;
+    const { personalInfo, summary, experience, education, skills, customDetails } = data;
     const { colors } = theme;
     const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
     const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
@@ -21,10 +21,11 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
     const experiencesToRender = experience.length > 0 ? experience : SAMPLE_RESUME.experience;
     const educationToRender = education.length > 0 ? education : SAMPLE_RESUME.education;
     const skillsToRender = skills.length > 0 ? skills : SAMPLE_RESUME.skills;
+    const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
     
     return (
-        <div className={`grid grid-cols-12 gap-0 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
-            <aside className="col-span-4 p-8" style={{ backgroundColor: colors.secondary }}>
+        <div className={`grid grid-cols-1 md:grid-cols-12 gap-0 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
+            <aside className="col-span-12 md:col-span-4 p-4 sm:p-8" style={{ backgroundColor: colors.secondary }}>
                 <header className="mb-8">
                     <h1 className="text-3xl font-bold" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
                     <p className="text-lg" style={{ color: colors.text, opacity: 0.9 }}>{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
@@ -38,6 +39,26 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
                     <p className="text-xs mb-1">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
                     <p className="text-xs mb-1">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
                 </section>
+
+                {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
+                     <section className="mb-6">
+                        <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Details</h2>
+                        <div className="space-y-2">
+                            {personalInfo.nationality && (
+                                <div>
+                                    <p className="text-xs font-bold">Nationality</p>
+                                    <p className="text-xs">{personalInfo.nationality}</p>
+                                </div>
+                            )}
+                            {customDetailsToRender.map(detail => (
+                                <div key={detail.id}>
+                                    <p className="text-xs font-bold">{detail.label}</p>
+                                    <p className="text-xs">{detail.value}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
                 
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Skills</h2>
@@ -64,7 +85,7 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
                     ))}
                 </section>
             </aside>
-            <main className="col-span-8 p-8">
+            <main className="col-span-12 md:col-span-8 p-4 sm:p-8">
                 <section className="mb-6">
                     <h2 className="text-xl font-bold uppercase tracking-wider border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Summary</h2>
                     <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>

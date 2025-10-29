@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner } from './types';
 import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS } from './constants';
 import Header from './components/Header';
@@ -14,19 +15,76 @@ import html2canvas from 'html2canvas';
 // @ts-ignore
 import { jsPDF } from 'jspdf';
 
-type View = 'editor' | 'cover-letter' | 'blog' | 'admin';
-type MobileView = 'editor' | 'preview';
+interface ResumeViewWrapperProps {
+  resumeData: ResumeData;
+  onDataChange: <T>(section: keyof ResumeData, data: T, index?: number) => void;
+  onAddItem: (section: keyof ResumeData, item: any) => void;
+  onRemoveItem: (section: keyof ResumeData, index: number) => void;
+  templateId: TemplateId;
+  setTemplateId: (id: TemplateId) => void;
+  themeId: ThemeId;
+  setThemeId: (id: ThemeId) => void;
+  onDownloadPdf: () => void;
+  formattingOptions: FormattingOptions;
+  setFormattingOptions: (options: FormattingOptions) => void;
+  onClearAll: () => void;
+}
+
+const ResumeViewWrapper: React.FC<ResumeViewWrapperProps> = (props) => {
+  const location = useLocation();
+  const isPreview = location.pathname.endsWith('/preview');
+  return (
+    <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className={!isPreview ? 'block' : 'hidden lg:block'}>
+        <ResumeEditor {...props} />
+      </div>
+      <div className={`lg:sticky top-20 self-start ${isPreview ? 'block' : 'hidden lg:block'}`}>
+        <ResumePreview 
+          resumeData={props.resumeData} 
+          templateId={props.templateId} 
+          themeId={props.themeId} 
+          formattingOptions={props.formattingOptions} 
+        />
+      </div>
+    </div>
+  );
+};
+
+interface CoverLetterViewWrapperProps {
+  coverLetterData: CoverLetterData;
+  resumeData: ResumeData;
+  onDataChange: (field: keyof CoverLetterData, value: string) => void;
+  onDownloadPdf: () => void;
+  themeId: ThemeId;
+  setThemeId: (id: ThemeId) => void;
+}
+
+const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) => {
+    const location = useLocation();
+    const isPreview = location.pathname.endsWith('/preview');
+    return (
+      <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className={!isPreview ? 'block' : 'hidden lg:block'}>
+          <CoverLetterEditor {...props} />
+        </div>
+        <div className={`lg:sticky top-20 self-start ${isPreview ? 'block' : 'hidden lg:block'}`}>
+          <CoverLetterPreview 
+            coverLetterData={props.coverLetterData} 
+            themeId={props.themeId}
+          />
+        </div>
+      </div>
+    );
+}
 
 const App: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
   const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>(EMPTY_COVER_LETTER);
   const [templateId, setTemplateId] = useState<TemplateId>('classic');
   const [themeId, setThemeId] = useState<ThemeId>('default');
-  const [view, setView] = useState<View>('editor');
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
   const [isAdModalOpen, setIsAdModalOpen] = useState(false);
   const [downloadType, setDownloadType] = useState<'resume' | 'cover-letter' | null>(null);
-  const [mobileView, setMobileView] = useState<MobileView>('editor');
 
   // Dynamic content state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
@@ -71,27 +129,11 @@ const App: React.FC = () => {
         } catch (error) {
             console.error("Failed to load shared resume from URL:", error);
         } finally {
+            // Use router-friendly way to clear hash, or let it be if it doesn't interfere
             window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
         }
     }
   }, []);
-
-  // URL-based routing for Admin Panel
-  useEffect(() => {
-    const checkHash = () => {
-      if (window.location.hash === '#admin') {
-        setView('admin');
-      }
-    };
-
-    checkHash();
-    window.addEventListener('hashchange', checkHash, false);
-
-    return () => {
-      window.removeEventListener('hashchange', checkHash, false);
-    };
-  }, []);
-
 
   // Sync senderName with resume fullName
   useEffect(() => {
@@ -133,6 +175,12 @@ const App: React.FC = () => {
       const sectionArray = (prev[section] as any[]).filter((_, i) => i !== index);
       return { ...prev, [section]: sectionArray };
     });
+  }, []);
+
+  const handleClearAllResume = useCallback(() => {
+    if (window.confirm('Are you sure you want to clear the entire resume? This action cannot be undone.')) {
+      setResumeData(EMPTY_RESUME);
+    }
   }, []);
 
   const downloadPdf = useCallback((elementId: string, filename: string) => {
@@ -207,18 +255,22 @@ const App: React.FC = () => {
     setDownloadType(null);
   };
   
-  useEffect(() => {
-    // Reset mobile view to editor when switching main views
-    setMobileView('editor');
-  }, [view]);
-
-  const renderView = () => {
-    switch(view) {
-      case 'editor':
-        return (
-          <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className={mobileView === 'editor' ? 'block' : 'hidden lg:block'}>
-              <ResumeEditor 
+  return (
+    <div className="min-h-screen flex flex-col font-sans">
+      <AdModal 
+        isOpen={isAdModalOpen}
+        onClose={() => {
+            setIsAdModalOpen(false);
+            setDownloadType(null);
+        }}
+        onConfirm={handleConfirmDownload}
+      />
+      <Header />
+      <main className="flex-grow w-full">
+        <Routes>
+          <Route path="/" element={<Navigate to="/resume" replace />} />
+          <Route path="/resume/*" element={
+            <ResumeViewWrapper 
                 resumeData={resumeData} 
                 onDataChange={handleDataChange}
                 onAddItem={handleAddItem}
@@ -230,70 +282,27 @@ const App: React.FC = () => {
                 onDownloadPdf={handleDownloadPdf}
                 formattingOptions={formattingOptions}
                 setFormattingOptions={setFormattingOptions}
-                setMobileView={setMobileView}
-              />
-            </div>
-            <div className={`lg:sticky top-20 self-start ${mobileView === 'preview' ? 'block' : 'hidden lg:block'}`}>
-              <ResumePreview 
-                resumeData={resumeData} 
-                templateId={templateId} 
-                themeId={themeId} 
-                formattingOptions={formattingOptions} 
-                setMobileView={setMobileView}
-              />
-            </div>
-          </div>
-        );
-      case 'cover-letter':
-        return (
-            <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className={mobileView === 'editor' ? 'block' : 'hidden lg:block'}>
-                <CoverLetterEditor 
-                    coverLetterData={coverLetterData} 
-                    resumeData={resumeData}
-                    onDataChange={handleCoverLetterDataChange}
-                    onDownloadPdf={handleCoverLetterDownloadPdf}
-                    themeId={themeId}
-                    setThemeId={setThemeId}
-                    setMobileView={setMobileView}
-                />
-              </div>
-              <div className={`lg:sticky top-20 self-start ${mobileView === 'preview' ? 'block' : 'hidden lg:block'}`}>
-                  <CoverLetterPreview 
-                    coverLetterData={coverLetterData} 
-                    themeId={themeId}
-                    setMobileView={setMobileView}
-                  />
-              </div>
-            </div>
-        );
-      case 'blog':
-        return <Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />;
-      case 'admin':
-        return <AdminPanel
-                  blogPosts={blogPosts}
-                  setBlogPosts={setBlogPosts}
-                  affiliateBanners={affiliateBanners}
-                  setAffiliateBanners={setAffiliateBanners}
-                />;
-      default:
-        return null;
-    }
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col font-sans">
-      <AdModal 
-        isOpen={isAdModalOpen}
-        onClose={() => {
-            setIsAdModalOpen(false);
-            setDownloadType(null);
-        }}
-        onConfirm={handleConfirmDownload}
-      />
-      <Header currentView={view} setView={setView} />
-      <main className="flex-grow w-full">
-        {renderView()}
+                onClearAll={handleClearAllResume}
+            />
+          } />
+          <Route path="/cover-letter/*" element={
+            <CoverLetterViewWrapper
+                coverLetterData={coverLetterData} 
+                resumeData={resumeData}
+                onDataChange={handleCoverLetterDataChange}
+                onDownloadPdf={handleCoverLetterDownloadPdf}
+                themeId={themeId}
+                setThemeId={setThemeId}
+            />
+          } />
+          <Route path="/blog" element={<Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />} />
+          <Route path="/admin" element={<AdminPanel
+              blogPosts={blogPosts}
+              setBlogPosts={setBlogPosts}
+              affiliateBanners={affiliateBanners}
+              setAffiliateBanners={setAffiliateBanners}
+            />} />
+        </Routes>
       </main>
       <Footer affiliateBanners={affiliateBanners} />
     </div>

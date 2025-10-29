@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CoverLetterData, ResumeData, ThemeId } from '../types';
 import AiSuggestionModal from './AiSuggestionModal';
 import ThemeSelector from './ThemeSelector';
@@ -11,7 +12,6 @@ interface CoverLetterEditorProps {
   onDownloadPdf: () => void;
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
-  setMobileView: (view: 'editor' | 'preview') => void;
 }
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
@@ -32,7 +32,7 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
 <textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" rows={15} />
 );
 
-const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId, setMobileView }) => {
+const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId }) => {
     const [modalOpen, setModalOpen] = useState(false);
   
     const handleAiClick = () => {
@@ -103,13 +103,13 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
         
         {/* Mobile View Toggle */}
         <div className="lg:hidden sticky bottom-4 flex justify-center">
-            <button
-                onClick={() => setMobileView('preview')}
+            <Link
+                to="/cover-letter/preview"
                 className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105"
             >
                 <EyeIcon className="h-6 w-6 mr-2" />
                 Show Preview
-            </button>
+            </Link>
         </div>
       </div>
     );

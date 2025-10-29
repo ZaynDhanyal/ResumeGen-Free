@@ -1,12 +1,13 @@
 import React, { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, FormattingOptions } from '../types';
-import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
+import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 import TemplateSelector from './TemplateSelector';
 import ThemeSelector from './ThemeSelector';
 import KeywordOptimizer from './KeywordOptimizer';
 import AiSuggestionModal from './AiSuggestionModal';
 import AdsenseBlock from './AdsenseBlock';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, DeleteIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon, ShareIcon, EyeIcon } from './icons';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon } from './icons';
 
 interface ResumeEditorProps {
   resumeData: ResumeData;
@@ -20,7 +21,7 @@ interface ResumeEditorProps {
   onDownloadPdf: () => void;
   formattingOptions: FormattingOptions;
   setFormattingOptions: (options: FormattingOptions) => void;
-  setMobileView: (view: 'editor' | 'preview') => void;
+  onClearAll: () => void;
 }
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
@@ -42,7 +43,7 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
 );
 
 const ResumeEditor: React.FC<ResumeEditorProps> = ({
-  resumeData, onDataChange, onAddItem, onRemoveItem, templateId, setTemplateId, themeId, setThemeId, onDownloadPdf, formattingOptions, setFormattingOptions, setMobileView
+  resumeData, onDataChange, onAddItem, onRemoveItem, templateId, setTemplateId, themeId, setThemeId, onDownloadPdf, formattingOptions, setFormattingOptions, onClearAll
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ type: 'summary' | 'bulletPoints'; context: any; onAccept: (text: string) => void } | null>(null);
@@ -100,6 +101,23 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
     }
   }, [resumeData]);
 
+  const getIconForLabel = (label: string): React.ReactNode => {
+    const lowerLabel = label.toLowerCase();
+    if (lowerLabel.includes('nation') || lowerLabel.includes('country')) {
+        return <GlobeAltIcon className="h-5 w-5 text-gray-500" />;
+    }
+    if (lowerLabel.includes('marital') || lowerLabel.includes('relationship')) {
+        return <UsersIcon className="h-5 w-5 text-gray-500" />;
+    }
+    if (lowerLabel.includes('license') || lowerLabel.includes('cnic') || lowerLabel.includes('id')) {
+        return <IdentificationIcon className="h-5 w-5 text-gray-500" />;
+    }
+    if (lowerLabel.includes('birth') || lowerLabel.includes('dob')) {
+        return <CalendarIcon className="h-5 w-5 text-gray-500" />;
+    }
+    return <InformationCircleIcon className="h-5 w-5 text-gray-500" />;
+  };
+
   return (
     <div className="h-full overflow-y-auto pr-0 lg:pr-4">
       {modalOpen && modalConfig && (
@@ -128,6 +146,13 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                     >
                     <DownloadIcon className="h-5 w-5 mr-2" />
                     Download PDF
+                </button>
+                <button
+                    onClick={onClearAll}
+                    className="w-full sm:w-auto flex items-center justify-center px-6 py-3 bg-red-600 text-white font-bold rounded-lg shadow-md hover:bg-red-700 transition-colors"
+                    >
+                    <TrashIcon className="h-5 w-5 mr-2" />
+                    Clear All
                 </button>
             </div>
         </div>
@@ -189,6 +214,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
           <Input placeholder="City, State" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
           <Input placeholder="LinkedIn Profile URL" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
           <Input placeholder="Personal Website/Portfolio" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
+          <Input placeholder="Nationality" value={resumeData.personalInfo.nationality} onChange={e => handleUpdateField('personalInfo', undefined, 'nationality', e.target.value)} />
         </div>
         <div className="mt-4 pt-4 border-t">
             <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
@@ -215,6 +241,42 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         </div>
       </Section>
       
+      <Section title="Custom Details" icon={<InformationCircleIcon className="h-6 w-6 text-blue-600" />}>
+        <p className="text-sm text-gray-500 mb-4 -mt-2">Add custom fields like Marital Status, etc.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {resumeData.customDetails.map((detail, index) => (
+            <div key={detail.id} className="relative bg-gray-50 p-4 border rounded-lg shadow-sm">
+                <button onClick={() => onRemoveItem('customDetails', index)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors">
+                    <TrashIcon className="h-5 w-5"/>
+                </button>
+                <div className="flex items-start gap-4">
+                    <div className="mt-2.5 flex-shrink-0">
+                        {getIconForLabel(detail.label)}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                         <Input 
+                            placeholder="Label (e.g., Marital Status)" 
+                            value={detail.label} 
+                            onChange={e => handleUpdateField('customDetails', index, 'label', e.target.value)} 
+                         />
+                         <Input 
+                            placeholder="Value (e.g., Single)" 
+                            value={detail.value} 
+                            onChange={e => handleUpdateField('customDetails', index, 'value', e.target.value)} 
+                         />
+                    </div>
+                </div>
+            </div>
+          ))}
+        </div>
+        <button 
+          onClick={() => onAddItem('customDetails', { ...EMPTY_CUSTOM_DETAIL, id: crypto.randomUUID() })} 
+          className="mt-4 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors"
+        >
+          <AddIcon className="h-5 w-5 mr-2" /> Add Custom Detail
+        </button>
+      </Section>
+
       <Section title="Professional Summary" icon={<SummaryIcon className="h-6 w-6 text-blue-600" />}>
         <Textarea placeholder="Write a brief 2-3 sentence summary of your professional experience and career goals." value={resumeData.summary} onChange={e => onDataChange('summary', e.target.value)} />
         <button
@@ -247,7 +309,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 <MagicIcon className="h-4 w-4 mr-2" />
                 Generate Bullets with AI
               </button>
-              <button onClick={() => onRemoveItem('experience', index)} className="text-red-500 hover:text-red-700 p-2"><DeleteIcon className="h-5 w-5"/></button>
+              <button onClick={() => onRemoveItem('experience', index)} className="text-red-500 hover:text-red-700 p-2"><TrashIcon className="h-5 w-5"/></button>
             </div>
           </div>
         ))}
@@ -267,7 +329,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 <Input placeholder="End Date (e.g., May 2017)" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
               </div>
             </div>
-            <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 p-2 float-right"><DeleteIcon className="h-5 w-5"/></button>
+            <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 p-2 float-right"><TrashIcon className="h-5 w-5"/></button>
 
           </div>
         ))}
@@ -281,7 +343,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         {resumeData.skills.map((skill, index) => (
           <div key={skill.id} className="flex items-center bg-gray-50 p-2 border rounded-md">
             <Input placeholder="Skill (e.g., React)" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
-            <button onClick={() => onRemoveItem('skills', index)} className="ml-2 text-red-500 hover:text-red-700 p-1"><DeleteIcon className="h-4 w-4"/></button>
+            <button onClick={() => onRemoveItem('skills', index)} className="ml-2 text-red-500 hover:text-red-700 p-1"><TrashIcon className="h-4 w-4"/></button>
           </div>
         ))}
         </div>
@@ -298,13 +360,13 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
 
       {/* Mobile View Toggle */}
       <div className="lg:hidden sticky bottom-4 flex justify-center">
-        <button
-            onClick={() => setMobileView('preview')}
+        <Link
+            to="/resume/preview"
             className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105"
         >
             <EyeIcon className="h-6 w-6 mr-2" />
             Show Preview
-        </button>
+        </Link>
       </div>
 
     </div>

@@ -9,6 +9,7 @@ export interface PersonalInfo {
   linkedin: string;
   website: string;
   profilePicture: string;
+  nationality: string;
 }
 
 export interface Experience {
@@ -37,12 +38,19 @@ export interface Skill {
   level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
 }
 
+export interface CustomDetail {
+  id: string;
+  label: string;
+  value: string;
+}
+
 export interface ResumeData {
   personalInfo: PersonalInfo;
   summary: string;
   experience: Experience[];
   education: Education[];
   skills: Skill[];
+  customDetails: CustomDetail[];
 }
 
 export interface CoverLetterData {

@@ -26,4 +26,17 @@ const Footer: React.FC<FooterProps> = ({ affiliateBanners }) => {
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">ResumeGen Free</h3>
-            <p className="text-gray-400 text-
+            <p className="text-gray-400 text-sm">
+              Create professional resumes and cover letters with AI-powered suggestions for free.
+            </p>
+            <p className="text-gray-500 text-xs mt-4">
+              &copy; {new Date().getFullYear()} ResumeGen Free. All Rights Reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

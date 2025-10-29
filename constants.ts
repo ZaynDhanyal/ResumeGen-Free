@@ -26,6 +26,12 @@ export const EMPTY_SKILL = {
   level: 'Expert' as const,
 };
 
+export const EMPTY_CUSTOM_DETAIL = {
+  id: '',
+  label: '',
+  value: '',
+};
+
 export const EMPTY_RESUME: ResumeData = {
   personalInfo: {
     fullName: '',
@@ -36,11 +42,13 @@ export const EMPTY_RESUME: ResumeData = {
     linkedin: '',
     website: '',
     profilePicture: '',
+    nationality: '',
   },
   summary: '',
   experience: [],
   education: [],
   skills: [],
+  customDetails: [],
 };
 
 export const EMPTY_COVER_LETTER: CoverLetterData = {
@@ -63,6 +71,7 @@ export const SAMPLE_RESUME: ResumeData = {
     linkedin: 'linkedin.com/in/alexandramiller',
     website: 'alexmiller.dev',
     profilePicture: '',
+    nationality: 'American',
   },
   summary: 'Seasoned Senior Product Manager with over 8 years of experience leading cross-functional teams to deliver innovative software solutions. Proven ability to drive product strategy from conception to launch, resulting in significant user growth and revenue increase. Passionate about creating user-centric products that solve real-world problems.',
   experience: [
@@ -113,6 +122,9 @@ export const SAMPLE_RESUME: ResumeData = {
     { id: 'skill5', name: 'Market Analysis', level: 'Advanced' },
     { id: 'skill6', name: 'A/B Testing', level: 'Advanced' },
     { id: 'skill7', name: 'SQL', level: 'Intermediate' },
+  ],
+  customDetails: [
+    { id: 'cd1', label: 'Marital Status', value: 'Single' },
   ],
 };
 
