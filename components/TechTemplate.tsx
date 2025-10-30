@@ -12,9 +12,9 @@ const skillLevelToPercentage = (level: 'Beginner' | 'Intermediate' | 'Advanced' 
     }
 };
 
-const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
+const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
     const { personalInfo, summary, experience, education, skills, customDetails } = data;
-    const { colors } = theme;
+    const colors = (themeMode === 'dark' && theme.dark) ? theme.dark : theme.colors;
     const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
     const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
 
@@ -34,10 +34,10 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Contact</h2>
                     <p className="text-xs mb-1 break-all">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
-                    <p className="text-xs mb-1">{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
-                    <p className="text-xs mb-1">{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
-                    <p className="text-xs mb-1">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
-                    <p className="text-xs mb-1">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
+                    <p className="text-xs mb-1 break-all">{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
+                    <p className="text-xs mb-1 break-all">{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
+                    <p className="text-xs mb-1 break-all">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
+                    <p className="text-xs mb-1 break-all">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
                 </section>
 
                 {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
@@ -60,14 +60,16 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
                     </section>
                 )}
                 
-                <section className="mb-6">
+                <section className="mb-8">
                     <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Skills</h2>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {skillsToRender.map(skill => (
-                            <div key={skill.id}>
-                                <p className="text-xs font-semibold">{skill.name}</p>
-                                <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">
-                                    <div className="h-1.5 rounded-full" style={{ width: skillLevelToPercentage(skill.level), backgroundColor: colors.primary }}></div>
+                            <div key={skill.id} className="flex items-center gap-2">
+                                <p className="w-1/3 text-xs font-semibold truncate" title={skill.name}>{skill.name}</p>
+                                <div className="w-2/3">
+                                    <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-1.5">
+                                        <div className="h-1.5 rounded-full" style={{ width: skillLevelToPercentage(skill.level), backgroundColor: colors.primary }}></div>
+                                    </div>
                                 </div>
                             </div>
                         ))}

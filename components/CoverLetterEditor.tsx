@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CoverLetterData, ResumeData, ThemeId } from '../types';
 import AiSuggestionModal from './AiSuggestionModal';
 import ThemeSelector from './ThemeSelector';
-import { MagicIcon, DownloadIcon, BuildingIcon, PersonalInfoIcon, PaletteIcon, EyeIcon } from './icons';
+import { MagicIcon, DownloadIcon, BuildingIcon, PersonalInfoIcon, PaletteIcon, EyeIcon, TrashIcon } from './icons';
 
 interface CoverLetterEditorProps {
   coverLetterData: CoverLetterData;
@@ -12,27 +12,39 @@ interface CoverLetterEditorProps {
   onDownloadPdf: () => void;
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
+  onClearSection: (section: 'recipient' | 'body') => void;
 }
 
-const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <div className="flex items-center mb-4">
-        {icon}
-        <h2 className="text-xl font-bold text-gray-800 ml-3">{title}</h2>
+const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; onClear?: () => void }> = ({ title, icon, children, onClear }) => (
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+            {icon}
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 ml-3">{title}</h2>
+        </div>
+        {onClear && (
+            <button
+              onClick={onClear}
+              title={`Clear ${title} section`}
+              className="p-1 text-gray-400 dark:text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500 transition-colors"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+        )}
       </div>
       {children}
     </div>
   );
   
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
-<input {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+<input {...props} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-gray-400 dark:placeholder-gray-400" />
 );
 
 const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
-<textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" rows={15} />
+<textarea {...props} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-gray-400 dark:placeholder-gray-400" rows={15} />
 );
 
-const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId }) => {
+const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId, onClearSection }) => {
     const [modalOpen, setModalOpen] = useState(false);
   
     const handleAiClick = () => {
@@ -58,12 +70,12 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
           />
         )}
 
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-6 flex-wrap">
                  <div className="w-full">
                     <div className="flex items-center mb-4">
                         <PaletteIcon className="h-6 w-6 text-blue-600" />
-                        <h3 className="text-xl font-bold text-gray-800 ml-3">Color Theme</h3>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 ml-3">Color Theme</h3>
                     </div>
                     <ThemeSelector selectedTheme={themeId} onSelectTheme={setThemeId} />
                 </div>
@@ -77,7 +89,7 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
             </div>
         </div>
   
-        <Section title="Recipient Information" icon={<BuildingIcon className="h-6 w-6 text-blue-600" />}>
+        <Section title="Recipient Information" icon={<BuildingIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('recipient')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input placeholder="Recipient's Full Name & Title" value={coverLetterData.recipientName} onChange={e => onDataChange('recipientName', e.target.value)} />
             <Input placeholder="Company Name" value={coverLetterData.recipientCompany} onChange={e => onDataChange('recipientCompany', e.target.value)} />
@@ -86,7 +98,7 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
           </div>
         </Section>
         
-        <Section title="Letter Body" icon={<PersonalInfoIcon className="h-6 w-6 text-blue-600" />}>
+        <Section title="Letter Body" icon={<PersonalInfoIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('body')}>
           <Textarea 
             placeholder="Write your cover letter here, or let AI help you get started!" 
             value={coverLetterData.body} 
@@ -94,7 +106,7 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
           />
           <button
             onClick={handleAiClick}
-            className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm"
+            className="mt-2 flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold rounded-md hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors text-sm"
           >
             <MagicIcon className="h-4 w-4 mr-2" />
             Generate with AI

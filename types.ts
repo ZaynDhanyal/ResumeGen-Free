@@ -1,5 +1,9 @@
 
 
+
+
+export type ThemeMode = 'light' | 'dark';
+
 export interface PersonalInfo {
   fullName: string;
   jobTitle: string;
@@ -68,7 +72,13 @@ export interface KeywordAnalysis {
   presentKeywords: string[];
 }
 
-export type ThemeId = 'default' | 'forest' | 'ruby' | 'slate' | 'plum';
+export interface AtsAnalysis {
+  score: 'Good' | 'Fair' | 'Needs Improvement';
+  passedChecks: string[];
+  suggestions: string[];
+}
+
+export type ThemeId = 'default' | 'forest' | 'ruby' | 'slate' | 'plum' | 'sunset' | 'ocean' | 'mint' | 'mustard' | 'charcoal';
 
 export interface Theme {
     id: ThemeId;
@@ -79,9 +89,15 @@ export interface Theme {
         background: string;
         text: string;
     };
+    dark?: {
+        primary: string;
+        secondary: string;
+        background: string;
+        text: string;
+    };
 }
 
-export type FontFamily = 'serif' | 'sans' | 'mono';
+export type FontFamily = 'serif' | 'sans' | 'mono' | 'lato' | 'merriweather' | 'roboto-slab' | 'open-sans' | 'montserrat';
 export type LineHeight = 'sm' | 'md' | 'lg';
 
 export interface FormattingOptions {

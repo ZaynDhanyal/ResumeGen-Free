@@ -123,9 +123,7 @@ export const SAMPLE_RESUME: ResumeData = {
     { id: 'skill6', name: 'A/B Testing', level: 'Advanced' },
     { id: 'skill7', name: 'SQL', level: 'Intermediate' },
   ],
-  customDetails: [
-    { id: 'cd1', label: 'Marital Status', value: 'Single' },
-  ],
+  customDetails: [],
 };
 
 export const SAMPLE_COVER_LETTER: CoverLetterData = {
@@ -155,27 +153,62 @@ export const THEMES: Theme[] = [
     {
         id: 'default',
         name: 'Default',
-        colors: { primary: '#2563EB', secondary: '#DBEAFE', background: '#FFFFFF', text: '#1F2937' }
+        colors: { primary: '#2563EB', secondary: '#DBEAFE', background: '#FFFFFF', text: '#1F2937' },
+        dark: { primary: '#3B82F6', secondary: '#1E3A8A', background: '#111827', text: '#F9FAFB' }
     },
     {
         id: 'forest',
         name: 'Forest',
-        colors: { primary: '#166534', secondary: '#D1FAE5', background: '#FFFFFF', text: '#1F2937' }
+        colors: { primary: '#166534', secondary: '#D1FAE5', background: '#FFFFFF', text: '#1F2937' },
+        dark: { primary: '#22C55E', secondary: '#14532D', background: '#111827', text: '#F9FAFB' }
     },
     {
         id: 'ruby',
         name: 'Ruby',
-        colors: { primary: '#BE123C', secondary: '#FEE2E2', background: '#FFFFFF', text: '#1F2937' }
+        colors: { primary: '#BE123C', secondary: '#FEE2E2', background: '#FFFFFF', text: '#1F2937' },
+        dark: { primary: '#F43F5E', secondary: '#881337', background: '#111827', text: '#F9FAFB' }
     },
     {
         id: 'slate',
         name: 'Slate',
-        colors: { primary: '#475569', secondary: '#E2E8F0', background: '#FFFFFF', text: '#1F2937' }
+        colors: { primary: '#475569', secondary: '#E2E8F0', background: '#FFFFFF', text: '#1F2937' },
+        dark: { primary: '#64748B', secondary: '#334155', background: '#111827', text: '#F9FAFB' }
     },
     {
         id: 'plum',
         name: 'Plum',
-        colors: { primary: '#7E22CE', secondary: '#F3E8FF', background: '#FFFFFF', text: '#1F2937' }
+        colors: { primary: '#7E22CE', secondary: '#F3E8FF', background: '#FFFFFF', text: '#1F2937' },
+        dark: { primary: '#A855F7', secondary: '#581C87', background: '#111827', text: '#F9FAFB' }
+    },
+    {
+        id: 'sunset',
+        name: 'Sunset',
+        colors: { primary: '#FF6B6B', secondary: '#FFE6E6', background: '#FFFFFF', text: '#4A4A4A' },
+        dark: { primary: '#FF8787', secondary: '#5A2A2A', background: '#2C2525', text: '#FDECEC' }
+    },
+    {
+        id: 'ocean',
+        name: 'Ocean',
+        colors: { primary: '#0096C7', secondary: '#ADE8F4', background: '#FFFFFF', text: '#023047' },
+        dark: { primary: '#48B5D9', secondary: '#023E7D', background: '#001219', text: '#E0FBFC' }
+    },
+    {
+        id: 'mint',
+        name: 'Mint',
+        colors: { primary: '#40916C', secondary: '#D8F3DC', background: '#FFFFFF', text: '#1B4332' },
+        dark: { primary: '#52B788', secondary: '#1B4332', background: '#081C15', text: '#D8F3DC' }
+    },
+    {
+        id: 'mustard',
+        name: 'Mustard',
+        colors: { primary: '#E7AB79', secondary: '#FFF4E0', background: '#FFFFFF', text: '#544C4A' },
+        dark: { primary: '#FFC999', secondary: '#5D412C', background: '#2C2520', text: '#FFF4E0' }
+    },
+    {
+        id: 'charcoal',
+        name: 'Charcoal',
+        colors: { primary: '#6C757D', secondary: '#F8F9FA', background: '#FFFFFF', text: '#212529' },
+        dark: { primary: '#ADB5BD', secondary: '#343A40', background: '#212529', text: '#F8F9FA' }
     }
 ];
 
@@ -229,9 +262,14 @@ export const DEFAULT_AFFILIATE_BANNERS: AffiliateBanner[] = [
 ];
 
 export const FONT_OPTIONS: { id: FontFamily; name: string; css: string }[] = [
+    { id: 'sans', name: 'Sans Serif (Default)', css: 'font-sans' },
     { id: 'serif', name: 'Serif', css: 'font-serif' },
-    { id: 'sans', name: 'Sans-serif', css: 'font-sans' },
     { id: 'mono', name: 'Monospace', css: 'font-mono' },
+    { id: 'lato', name: 'Lato', css: 'font-lato' },
+    { id: 'merriweather', name: 'Merriweather', css: 'font-merriweather' },
+    { id: 'roboto-slab', name: 'Roboto Slab', css: 'font-roboto-slab' },
+    { id: 'open-sans', name: 'Open Sans', css: 'font-open-sans' },
+    { id: 'montserrat', name: 'Montserrat', css: 'font-montserrat' },
 ];
 
 export const LINE_HEIGHT_OPTIONS: { id: LineHeight; name: string; css: string }[] = [

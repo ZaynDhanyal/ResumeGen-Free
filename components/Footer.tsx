@@ -9,7 +9,7 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ affiliateBanners }) => {
   return (
-    <footer className="bg-gray-800 text-white mt-12">
+    <footer className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white mt-12 border-t dark:border-gray-700">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-2 hidden">
@@ -26,10 +26,10 @@ const Footer: React.FC<FooterProps> = ({ affiliateBanners }) => {
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">ResumeGen Free</h3>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
               Create professional resumes and cover letters with AI-powered suggestions for free.
             </p>
-            <p className="text-gray-500 text-xs mt-4">
+            <p className="text-gray-500 dark:text-gray-500 text-xs mt-4">
               &copy; {new Date().getFullYear()} ResumeGen Free. All Rights Reserved.
             </p>
           </div>

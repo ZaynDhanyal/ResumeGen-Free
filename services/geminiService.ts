@@ -1,6 +1,7 @@
 
+
 import { GoogleGenAI, Type } from '@google/genai';
-import { Experience, Skill, KeywordAnalysis, ResumeData } from '../types';
+import { Experience, Skill, KeywordAnalysis, ResumeData, AtsAnalysis } from '../types';
 
 if (!process.env.API_KEY) {
   // This is a placeholder check. The environment variable is expected to be set.
@@ -138,3 +139,50 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
         throw new Error("Failed to communicate with the AI model for keyword analysis.");
     }
 }
+
+export async function analyzeAtsCompatibility(resumeData: ResumeData): Promise<AtsAnalysis> {
+    const prompt = `
+      As an expert ATS resume checker, analyze the following resume data for compatibility with Applicant Tracking Systems.
+      Based on the data, evaluate these ATS best practices:
+      1.  **Contact Information**: Is the name, email, and phone number present and clear?
+      2.  **Standard Section Headings**: Does it use common headings like "Experience", "Education", "Skills"?
+      3.  **Job Experience Format**: Are job titles, companies, and dates clearly listed for each role?
+      4.  **Date Formatting**: Are dates written in a simple, consistent format (e.g., "Jan 2020" or "01/2020")?
+      5.  **Skill Section**: Is there a dedicated section for skills?
+      6.  **File Type & Formatting**: Assume the output will be plain text. Are there any complex elements like tables or graphics implied by the data structure that would fail parsing? (e.g., skill ratings like 'Expert' are parsable).
+  
+      Provide a "score" of 'Good', 'Fair', or 'Needs Improvement'.
+      List the specific checks that passed in a "passedChecks" array.
+      List actionable suggestions for improvement in a "suggestions" array. If no issues, provide general tips.
+  
+      Resume Data:
+      ---
+      ${JSON.stringify(resumeData)}
+      ---
+    `;
+  
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              score: { type: Type.STRING },
+              passedChecks: { type: Type.ARRAY, items: { type: Type.STRING } },
+              suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+          },
+        },
+      });
+  
+      const jsonText = response.text.trim();
+      return JSON.parse(jsonText) as AtsAnalysis;
+  
+    } catch (error) {
+      console.error("Error analyzing ATS compatibility:", error);
+      throw new Error("Failed to communicate with the AI model for ATS analysis.");
+    }
+  }

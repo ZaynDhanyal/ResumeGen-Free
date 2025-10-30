@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ResumeData, TemplateId, Theme, ThemeId, FormattingOptions } from '../types';
+import { ResumeData, TemplateId, Theme, ThemeId, FormattingOptions, ThemeMode } from '../types';
 import { THEMES, FONT_OPTIONS, LINE_HEIGHT_OPTIONS, SAMPLE_RESUME } from '../constants';
 import { PersonalInfoIcon, PencilIcon } from './icons';
 import TechTemplate from './TechTemplate';
@@ -11,17 +11,19 @@ interface ResumePreviewProps {
   templateId: TemplateId;
   themeId: ThemeId;
   formattingOptions: FormattingOptions;
+  themeMode: ThemeMode;
 }
 
 export interface TemplateProps {
   data: ResumeData;
   theme: Theme;
   formatting: FormattingOptions;
+  themeMode: ThemeMode;
 }
 
-const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
+const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
   const { personalInfo, summary, experience, education, skills, customDetails } = data;
-  const { colors } = theme;
+  const colors = (themeMode === 'dark' && theme.dark) ? theme.dark : theme.colors;
   const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
   const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
 
@@ -58,11 +60,11 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =
           </div>
       )}
       <section className="mb-6">
-        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Summary</h2>
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Summary</h2>
         <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>
       </section>
       <section className="mb-6">
-        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Experience</h2>
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Experience</h2>
         {experiencesToRender.map(exp => (
           <div key={exp.id} className="mb-4">
             <div className="flex justify-between items-baseline">
@@ -77,7 +79,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =
         ))}
       </section>
       <section className="mb-6">
-        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Education</h2>
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Education</h2>
         {educationToRender.map(edu => (
           <div key={edu.id} className="mb-2">
             <div className="flex justify-between items-baseline">
@@ -89,7 +91,7 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =
         ))}
       </section>
       <section>
-        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary }}>Skills</h2>
+        <h2 className="text-xl font-bold border-b pb-1 mb-2" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Skills</h2>
         <div className="flex flex-wrap gap-2 mt-3">
           {skillsToRender.map(skill => <span key={skill.id} className="text-sm px-3 py-1 rounded-full" style={{ backgroundColor: colors.secondary, color: colors.primary }}>{skill.name}</span>)}
         </div>
@@ -98,9 +100,9 @@ const ClassicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =
   );
 };
 
-const ModernTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
+const ModernTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
     const { personalInfo, summary, experience, education, skills, customDetails } = data;
-    const { colors } = theme;
+    const colors = (themeMode === 'dark' && theme.dark) ? theme.dark : theme.colors;
     const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
     const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
 
@@ -121,8 +123,8 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =>
                     <p className="text-sm mb-1 break-all">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
                     <p className="text-sm mb-1">{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
                     <p className="text-sm mb-1">{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
-                    <p className="text-sm mb-1">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
-                    <p className="text-sm mb-1">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
+                    <p className="text-sm mb-1 break-all">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
+                    <p className="text-sm mb-1 break-all">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
                 </section>
                 {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
                     <section className="mb-6">
@@ -141,13 +143,13 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =>
                         ))}
                     </section>
                 )}
-                <section className="mb-6">
+                <section className="mb-8">
                     <h2 className="text-lg font-semibold uppercase mb-2" style={{ color: colors.primary }}>Skills</h2>
                     <ul className="space-y-1">
                         {skillsToRender.map(skill => <li key={skill.id} className="text-sm px-2 py-1 rounded" style={{ backgroundColor: colors.secondary }}>{skill.name}</li>)}
                     </ul>
                 </section>
-                <section>
+                <section className="mb-6">
                     <h2 className="text-lg font-semibold uppercase mb-2" style={{ color: colors.primary }}>Education</h2>
                     {educationToRender.map(edu => (
                         <div key={edu.id} className="mb-2">
@@ -183,9 +185,9 @@ const ModernTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =>
     );
 };
 
-const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
+const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
     const { personalInfo, summary, experience, education, skills, customDetails } = data;
-    const { colors } = theme;
+    const colors = (themeMode === 'dark' && theme.dark) ? theme.dark : theme.colors;
     const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
     const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
     
@@ -194,14 +196,15 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) 
     const skillsToRender = skills.length > 0 ? skills : SAMPLE_RESUME.skills;
     const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
 
-    const creativeBg = '#F9FAFB';
-    const creativeTextColor = '#111827';
+    const creativeBg = themeMode === 'dark' ? '#111827' : '#F9FAFB';
+    const creativeTextColor = themeMode === 'dark' ? '#F9FAFB' : '#111827';
+    const creativeAsideTextColor = themeMode === 'dark' ? '#F9FAFB' : '#FFFFFF';
 
     return (
         <div className={`p-4 sm:p-8 ${fontClass} ${lineHeightClass} relative`} style={{ backgroundColor: creativeBg, color: creativeTextColor }}>
             <div className="absolute top-0 left-0 w-full md:w-1/3 h-64 md:h-full z-0" style={{ backgroundColor: colors.primary }}></div>
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <aside className="col-span-1 text-white text-center md:text-left">
+                <aside className="col-span-1 text-center md:text-left" style={{ color: creativeAsideTextColor }}>
                     {personalInfo.profilePicture ? (
                         <img src={personalInfo.profilePicture} alt="Profile" className="rounded-full w-40 h-40 mx-auto mb-6 border-4 border-white shadow-lg object-cover"/>
                     ) : (
@@ -241,10 +244,10 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) 
                         ))}
                     </section>
                 </aside>
-                <main className="col-span-1 md:col-span-2 md:pl-8 text-gray-800">
+                <main className="col-span-1 md:col-span-2 md:pl-8" style={{ color: creativeTextColor }}>
                     <header className="mb-8 text-center md:text-left">
                         <h1 className="text-5xl font-extrabold" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
-                        <p className="text-xl" style={{ color: creativeTextColor, opacity: 0.8 }}>{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
+                        <p className="text-xl" style={{ opacity: 0.8 }}>{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
                     </header>
                     <section className="mb-6">
                         <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Summary</h2>
@@ -265,7 +268,7 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) 
                      <section>
                         <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Skills</h2>
                         <div className="flex flex-wrap gap-2 mt-3">
-                            {skillsToRender.map(skill => <span key={skill.id} className="text-sm px-3 py-1 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>{skill.name}</span>)}
+                            {skillsToRender.map(skill => <span key={skill.id} className="inline-flex items-center text-sm px-3 py-1 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>{skill.name}</span>)}
                         </div>
                     </section>
                 </main>
@@ -283,23 +286,23 @@ const templates = {
   minimalist: MinimalistTemplate,
 };
 
-const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId, formattingOptions }) => {
+const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId, formattingOptions, themeMode }) => {
   const TemplateComponent = templates[templateId];
   const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
 
   return (
-    <div className="bg-white shadow-lg rounded-lg overflow-hidden relative">
+    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden relative">
         <div className="lg:hidden absolute top-4 right-4 z-10">
             <Link
                 to="/resume"
-                className="flex items-center px-4 py-2 bg-gray-700 text-white font-bold rounded-full shadow-lg hover:bg-gray-800 transition-colors"
+                className="flex items-center px-4 py-2 bg-gray-700/80 dark:bg-gray-900/80 backdrop-blur-sm text-white font-bold rounded-full shadow-lg hover:bg-gray-800 dark:hover:bg-gray-900 transition-colors"
             >
                 <PencilIcon className="h-5 w-5 mr-2" />
                 Edit
             </Link>
         </div>
         <div id="resume-preview">
-            <TemplateComponent data={resumeData} theme={selectedTheme} formatting={formattingOptions} />
+            <TemplateComponent data={resumeData} theme={selectedTheme} formatting={formattingOptions} themeMode={themeMode} />
         </div>
     </div>
   );

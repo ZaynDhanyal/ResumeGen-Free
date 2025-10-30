@@ -9,13 +9,13 @@ interface ThemeSelectorProps {
 
 const ThemeSelector: React.FC<ThemeSelectorProps> = ({ selectedTheme, onSelectTheme }) => {
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex flex-wrap items-center gap-3">
       {THEMES.map(theme => (
         <button
           key={theme.id}
           title={theme.name}
           onClick={() => onSelectTheme(theme.id)}
-          className={`w-8 h-8 rounded-full transition-transform transform hover:scale-110 focus:outline-none ${selectedTheme === theme.id ? 'ring-2 ring-offset-2 ring-blue-500' : ''}`}
+          className={`w-8 h-8 rounded-full transition-transform transform hover:scale-110 focus:outline-none ${selectedTheme === theme.id ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-blue-500' : ''}`}
           style={{ backgroundColor: theme.colors.primary }}
         />
       ))}

@@ -51,13 +51,13 @@ const AiSuggestionModal: React.FC<AiSuggestionModalProps> = ({ type, context, on
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-all">
-        <div className="p-6 border-b flex justify-between items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl transform transition-all">
+        <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center">
           <div className="flex items-center">
             <MagicIcon className="h-6 w-6 text-blue-600" />
-            <h3 className="text-lg font-bold text-gray-800 ml-2">AI Suggestion</h3>
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 ml-2">AI Suggestion</h3>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200">
             <CloseIcon className="h-6 w-6" />
           </button>
         </div>
@@ -65,23 +65,23 @@ const AiSuggestionModal: React.FC<AiSuggestionModalProps> = ({ type, context, on
           {isLoading ? (
             <div className="flex items-center justify-center h-48">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p className="ml-4 text-gray-600">Generating ideas...</p>
+                <p className="ml-4 text-gray-600 dark:text-gray-400">Generating ideas...</p>
             </div>
           ) : error ? (
-            <div className="text-red-500 bg-red-100 p-4 rounded-md">{error}</div>
+            <div className="text-red-500 bg-red-100 dark:bg-red-900/50 dark:text-red-400 p-4 rounded-md">{error}</div>
           ) : (
             <textarea
-              className="w-full h-48 p-3 border rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-48 p-3 border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={suggestion}
               onChange={(e) => setSuggestion(e.target.value)}
             />
           )}
         </div>
-        <div className="p-4 bg-gray-50 rounded-b-lg flex justify-end space-x-4">
+        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-b-lg flex justify-end space-x-4 border-t dark:border-gray-700">
           <button
             onClick={handleRegenerate}
             disabled={isLoading}
-            className="px-6 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50"
+            className="px-6 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50"
           >
             Regenerate
           </button>

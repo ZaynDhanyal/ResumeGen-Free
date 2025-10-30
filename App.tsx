@@ -1,7 +1,8 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner } from './types';
-import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS } from './constants';
+import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner, ThemeMode, FontFamily } from './types';
+import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS, THEMES, FONT_OPTIONS } from './constants';
 import Header from './components/Header';
 import ResumeEditor from './components/ResumeEditor';
 import ResumePreview from './components/ResumePreview';
@@ -28,6 +29,8 @@ interface ResumeViewWrapperProps {
   formattingOptions: FormattingOptions;
   setFormattingOptions: (options: FormattingOptions) => void;
   onClearAll: () => void;
+  onClearSection: (section: keyof ResumeData) => void;
+  theme: ThemeMode;
 }
 
 const ResumeViewWrapper: React.FC<ResumeViewWrapperProps> = (props) => {
@@ -44,6 +47,7 @@ const ResumeViewWrapper: React.FC<ResumeViewWrapperProps> = (props) => {
           templateId={props.templateId} 
           themeId={props.themeId} 
           formattingOptions={props.formattingOptions} 
+          themeMode={props.theme}
         />
       </div>
     </div>
@@ -57,6 +61,8 @@ interface CoverLetterViewWrapperProps {
   onDownloadPdf: () => void;
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
+  onClearSection: (section: 'recipient' | 'body') => void;
+  theme: ThemeMode;
 }
 
 const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) => {
@@ -71,6 +77,7 @@ const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) =>
           <CoverLetterPreview 
             coverLetterData={props.coverLetterData} 
             themeId={props.themeId}
+            themeMode={props.theme}
           />
         </div>
       </div>
@@ -85,6 +92,23 @@ const App: React.FC = () => {
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
   const [isAdModalOpen, setIsAdModalOpen] = useState(false);
   const [downloadType, setDownloadType] = useState<'resume' | 'cover-letter' | null>(null);
+
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const storedTheme = window.localStorage.getItem('theme') as ThemeMode;
+      if (storedTheme) return storedTheme;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove(theme === 'dark' ? 'light' : 'dark');
+    root.classList.add(theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
 
   // Dynamic content state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
@@ -183,49 +207,127 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const handleClearResumeSection = useCallback((section: keyof ResumeData) => {
+    const sectionName = section.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+    if (window.confirm(`Are you sure you want to clear the "${sectionName}" section? This cannot be undone.`)) {
+        setResumeData(prev => ({
+            ...prev,
+            [section]: EMPTY_RESUME[section]
+        }));
+    }
+  }, []);
+
+  const handleClearCoverLetterSection = useCallback((section: 'recipient' | 'body') => {
+      const sectionName = section === 'recipient' ? 'Recipient Information' : 'Letter Body';
+      if (window.confirm(`Are you sure you want to clear the ${sectionName} section? This cannot be undone.`)) {
+          if (section === 'recipient') {
+              setCoverLetterData(prev => ({
+                  ...prev,
+                  recipientName: EMPTY_COVER_LETTER.recipientName,
+                  recipientCompany: EMPTY_COVER_LETTER.recipientCompany,
+              }));
+          } else if (section === 'body') {
+              setCoverLetterData(prev => ({
+                  ...prev,
+                  body: EMPTY_COVER_LETTER.body,
+              }));
+          }
+      }
+  }, []);
+
   const downloadPdf = useCallback((elementId: string, filename: string) => {
-    const element = document.getElementById(elementId);
-    if (!element) {
+    const sourceElement = document.getElementById(elementId);
+    if (!sourceElement) {
         console.error(`Element with id ${elementId} not found.`);
         return;
     }
 
-    html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: null,
-    }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
+    const printWidth = 794;
+
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+    }
+
+    const elementToPrint = sourceElement.cloneNode(true) as HTMLElement;
+    elementToPrint.style.position = 'absolute';
+    elementToPrint.style.top = '-9999px';
+    elementToPrint.style.left = '0px';
+    elementToPrint.style.width = `${printWidth}px`;
+    elementToPrint.style.height = 'auto';
+
+    document.body.appendChild(elementToPrint);
+
+    setTimeout(() => {
+      html2canvas(elementToPrint, {
+        scale: 6,
+        letterRendering: true,
+        useCORS: true,
+        width: printWidth,
+        height: elementToPrint.scrollHeight,
+        windowWidth: printWidth,
+        windowHeight: elementToPrint.scrollHeight,
+        backgroundColor: null,
+      }).then(canvas => {
+        document.body.removeChild(elementToPrint);
+        if (isDarkMode) {
+          document.documentElement.classList.add('dark');
+        }
+
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
+        const pageFillColor = selectedTheme.colors.secondary;
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        
+        const pageCanvasHeight = (canvasWidth * pdfHeight) / pdfWidth;
+        
+        let canvasPosition = 0;
+        let pageCount = 0;
+        
+        while (canvasPosition < canvasHeight) {
+            pageCount++;
+            if (pageCount > 1) {
+                pdf.addPage();
+            }
+
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = canvasWidth;
+            pageCanvas.height = pageCanvasHeight;
+            const pageCtx = pageCanvas.getContext('2d');
+            
+            if (pageCtx) {
+                pageCtx.fillStyle = pageFillColor;
+                pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                
+                const sliceHeight = Math.min(pageCanvasHeight, canvasHeight - canvasPosition);
+                pageCtx.drawImage(canvas, 0, canvasPosition, canvasWidth, sliceHeight, 0, 0, canvasWidth, sliceHeight);
+                
+                const pageImgData = pageCanvas.toDataURL('image/png');
+                pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            }
+            
+            canvasPosition += pageCanvasHeight;
+        }
+        
+        pdf.save(filename);
+      }).catch(err => {
+        console.error("html2canvas failed:", err);
+        document.body.removeChild(elementToPrint);
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+        }
       });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      
-      const ratio = canvasWidth / pdfWidth;
-      const totalImageHeight = canvasHeight / ratio;
-
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, Math.min(totalImageHeight, pdfHeight));
-      let heightLeft = totalImageHeight - pdfHeight;
-
-      while (heightLeft > 0) {
-        position -= pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight);
-        heightLeft -= pdfHeight;
-      }
-      
-      pdf.save(filename);
-    });
-  }, []);
+    }, 200);
+  }, [themeId]);
 
   const sanitizeFilename = (name: string) => {
     return name.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'document';
@@ -256,7 +358,7 @@ const App: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans text-gray-800 dark:text-gray-200">
       <AdModal 
         isOpen={isAdModalOpen}
         onClose={() => {
@@ -265,7 +367,7 @@ const App: React.FC = () => {
         }}
         onConfirm={handleConfirmDownload}
       />
-      <Header />
+      <Header theme={theme} setTheme={setTheme} />
       <main className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Navigate to="/resume" replace />} />
@@ -283,6 +385,8 @@ const App: React.FC = () => {
                 formattingOptions={formattingOptions}
                 setFormattingOptions={setFormattingOptions}
                 onClearAll={handleClearAllResume}
+                onClearSection={handleClearResumeSection}
+                theme={theme}
             />
           } />
           <Route path="/cover-letter/*" element={
@@ -293,6 +397,8 @@ const App: React.FC = () => {
                 onDownloadPdf={handleCoverLetterDownloadPdf}
                 themeId={themeId}
                 setThemeId={setThemeId}
+                onClearSection={handleClearCoverLetterSection}
+                theme={theme}
             />
           } />
           <Route path="/blog" element={<Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />} />
