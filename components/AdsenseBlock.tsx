@@ -9,6 +9,9 @@ interface AdsenseBlockProps {
 }
 
 const AdsenseBlock: React.FC<AdsenseBlockProps> = ({ width = 'w-72', height = 'h-60', className = '' }) => {
+  // This component is disabled.
+  return null;
+  /*
   return (
     <div className={`${width} ${height} ${className} bg-gray-200 border-2 border-dashed border-gray-400 flex items-center justify-center rounded-md`}>
       <div className="text-center text-gray-500">
@@ -18,6 +21,7 @@ const AdsenseBlock: React.FC<AdsenseBlockProps> = ({ width = 'w-72', height = 'h
       </div>
     </div>
   );
+  */
 };
 
 export default AdsenseBlock;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CoverLetterData, ResumeData, ThemeId } from '../types';
+import { CoverLetterData, ResumeData, ThemeId, AffiliateBanner } from '../types';
 import AiSuggestionModal from './AiSuggestionModal';
 import ThemeSelector from './ThemeSelector';
 import { MagicIcon, DownloadIcon, BuildingIcon, PersonalInfoIcon, PaletteIcon, EyeIcon, TrashIcon } from './icons';
@@ -13,6 +13,7 @@ interface CoverLetterEditorProps {
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
   onClearSection: (section: 'recipient' | 'body') => void;
+  affiliateBanners: AffiliateBanner[];
 }
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; onClear?: () => void }> = ({ title, icon, children, onClear }) => (
@@ -44,7 +45,7 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
 <textarea {...props} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-gray-400 dark:placeholder-gray-400" rows={15} />
 );
 
-const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId, onClearSection }) => {
+const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId, onClearSection, affiliateBanners }) => {
     const [modalOpen, setModalOpen] = useState(false);
   
     const handleAiClick = () => {
@@ -113,6 +114,8 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
           </button>
         </Section>
         
+        {/* <AffiliatePanel affiliateBanners={affiliateBanners} /> */}
+
         {/* Mobile View Toggle */}
         <div className="lg:hidden sticky bottom-4 flex justify-center">
             <Link

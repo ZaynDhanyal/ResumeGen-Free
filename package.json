@@ -15,7 +15,8 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "react-router-dom": "^6.26.0",
-    "react-router": "^6.26.0"
+    "react-router": "^6.26.0",
+    "react-image-crop": "^11.0.7"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

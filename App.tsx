@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner, ThemeMode, FontFamily } from './types';
@@ -11,7 +12,6 @@ import CoverLetterPreview from './components/CoverLetterPreview';
 import Blog from './components/Blog';
 import Footer from './components/Footer';
 import AdminPanel from './components/AdminPanel';
-import AdModal from './components/AdModal';
 import html2canvas from 'html2canvas';
 // @ts-ignore
 import { jsPDF } from 'jspdf';
@@ -31,6 +31,7 @@ interface ResumeViewWrapperProps {
   onClearAll: () => void;
   onClearSection: (section: keyof ResumeData) => void;
   theme: ThemeMode;
+  affiliateBanners: AffiliateBanner[];
 }
 
 const ResumeViewWrapper: React.FC<ResumeViewWrapperProps> = (props) => {
@@ -63,6 +64,7 @@ interface CoverLetterViewWrapperProps {
   setThemeId: (id: ThemeId) => void;
   onClearSection: (section: 'recipient' | 'body') => void;
   theme: ThemeMode;
+  affiliateBanners: AffiliateBanner[];
 }
 
 const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) => {
@@ -90,8 +92,6 @@ const App: React.FC = () => {
   const [templateId, setTemplateId] = useState<TemplateId>('classic');
   const [themeId, setThemeId] = useState<ThemeId>('default');
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
-  const [isAdModalOpen, setIsAdModalOpen] = useState(false);
-  const [downloadType, setDownloadType] = useState<'resume' | 'cover-letter' | null>(null);
 
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -334,39 +334,19 @@ const App: React.FC = () => {
   }
 
   const handleDownloadPdf = useCallback(() => {
-    setDownloadType('resume');
-    setIsAdModalOpen(true);
-  }, []);
+    const name = resumeData.personalInfo.fullName;
+    const filename = `Resume-${sanitizeFilename(name)}.pdf`;
+    downloadPdf('resume-preview', filename);
+  }, [resumeData.personalInfo.fullName, downloadPdf]);
 
   const handleCoverLetterDownloadPdf = useCallback(() => {
-    setDownloadType('cover-letter');
-    setIsAdModalOpen(true);
-  }, []);
-
-  const handleConfirmDownload = () => {
-    if (downloadType === 'resume') {
-        const name = resumeData.personalInfo.fullName;
-        const filename = `Resume-${sanitizeFilename(name)}.pdf`;
-        downloadPdf('resume-preview', filename);
-    } else if (downloadType === 'cover-letter') {
-        const name = coverLetterData.senderName;
-        const filename = `CoverLetter-${sanitizeFilename(name)}.pdf`;
-        downloadPdf('cover-letter-preview', filename);
-    }
-    setIsAdModalOpen(false);
-    setDownloadType(null);
-  };
+    const name = coverLetterData.senderName;
+    const filename = `CoverLetter-${sanitizeFilename(name)}.pdf`;
+    downloadPdf('cover-letter-preview', filename);
+  }, [coverLetterData.senderName, downloadPdf]);
   
   return (
     <div className="min-h-screen flex flex-col font-sans text-gray-800 dark:text-gray-200">
-      <AdModal 
-        isOpen={isAdModalOpen}
-        onClose={() => {
-            setIsAdModalOpen(false);
-            setDownloadType(null);
-        }}
-        onConfirm={handleConfirmDownload}
-      />
       <Header theme={theme} setTheme={setTheme} />
       <main className="flex-grow w-full">
         <Routes>
@@ -387,6 +367,7 @@ const App: React.FC = () => {
                 onClearAll={handleClearAllResume}
                 onClearSection={handleClearResumeSection}
                 theme={theme}
+                affiliateBanners={affiliateBanners}
             />
           } />
           <Route path="/cover-letter/*" element={
@@ -399,6 +380,7 @@ const App: React.FC = () => {
                 setThemeId={setThemeId}
                 onClearSection={handleClearCoverLetterSection}
                 theme={theme}
+                affiliateBanners={affiliateBanners}
             />
           } />
           <Route path="/blog" element={<Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />} />

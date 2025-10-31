@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LogoIcon, MenuIcon, CloseIcon, SunIcon, MoonIcon } from './icons';
@@ -12,6 +13,9 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const isAdminVisible = searchParams.get('admin') === 'true';
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -72,6 +76,11 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
                 <Link to="/blog" className={navLinkClasses('/blog')}>
                   Blog
                 </Link>
+                {isAdminVisible && (
+                  <Link to="/admin" className={navLinkClasses('/admin')}>
+                    Admin
+                  </Link>
+                )}
               </nav>
 
               <button
@@ -130,6 +139,11 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
             <Link to="/blog" onClick={handleNavClick} className={navLinkClasses('/blog', true)}>
               Blog
             </Link>
+            {isAdminVisible && (
+              <Link to="/admin" onClick={handleNavClick} className={navLinkClasses('/admin', true)}>
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
       </div>

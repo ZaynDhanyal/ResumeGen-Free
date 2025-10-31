@@ -9,6 +9,9 @@ interface AffiliateBannerProps {
 }
 
 const AffiliateBanner: React.FC<AffiliateBannerProps> = ({ name, url, imageUrl, description }) => {
+  // This component is disabled.
+  return null;
+  /*
   return (
     <a
       href={url}
@@ -21,6 +24,7 @@ const AffiliateBanner: React.FC<AffiliateBannerProps> = ({ name, url, imageUrl, 
       <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
     </a>
   );
+  */
 };
 
 export default AffiliateBanner;

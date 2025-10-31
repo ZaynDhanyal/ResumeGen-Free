@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import AdsenseBlock from './AdsenseBlock';
 import { CloseIcon, DownloadIcon } from './icons';
 
@@ -9,6 +9,10 @@ interface AdModalProps {
 }
 
 const AdModal: React.FC<AdModalProps> = ({ isOpen, onClose, onConfirm }) => {
+  // This component has been disabled.
+  return null;
+
+  /*
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
@@ -57,6 +61,7 @@ const AdModal: React.FC<AdModalProps> = ({ isOpen, onClose, onConfirm }) => {
       </div>
     </div>
   );
+  */
 };
 
 export default AdModal;

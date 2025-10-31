@@ -15,6 +15,20 @@ const CoverLetterPreview: React.FC<CoverLetterPreviewProps> = ({ coverLetterData
   const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
   const colors = (themeMode === 'dark' && selectedTheme.dark) ? selectedTheme.dark : selectedTheme.colors;
 
+  const contentBody = body || SAMPLE_COVER_LETTER.body;
+  
+  const getDynamicStyles = (text: string) => {
+    const length = text.length;
+    if (length > 1500) {
+      return 'text-xs leading-snug'; // Smaller font, tighter leading for very long text
+    } else if (length > 800) { // Adjusted threshold for better readability
+      return 'text-sm leading-normal'; // Medium font size and leading
+    }
+    return 'text-base leading-relaxed'; // Default for shorter letters
+  };
+
+  const dynamicTextStyles = getDynamicStyles(contentBody);
+
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden relative">
       <div className="lg:hidden absolute top-4 right-4 z-10">
@@ -28,23 +42,23 @@ const CoverLetterPreview: React.FC<CoverLetterPreviewProps> = ({ coverLetterData
       </div>
       <div 
         id="cover-letter-preview" 
-        className="p-8 sm:p-12 font-serif text-base leading-relaxed min-h-[297mm]"
+        className={`p-8 sm:p-12 font-serif min-h-[297mm] ${dynamicTextStyles}`}
         style={{ backgroundColor: colors.secondary, color: colors.text }}
       >
         <div className="mb-8 text-left">
-          <p className="font-bold">{senderName || SAMPLE_COVER_LETTER.senderName}</p>
-          <p>{date || SAMPLE_COVER_LETTER.date}</p>
+          <p className="font-bold" style={{ color: colors.primary }}>{senderName || SAMPLE_COVER_LETTER.senderName}</p>
+          <p style={{ color: colors.primary, opacity: 0.8 }}>{date || SAMPLE_COVER_LETTER.date}</p>
         </div>
         <div className="mb-8 text-left">
-          <p>{recipientName || SAMPLE_COVER_LETTER.recipientName}</p>
-          <p>{recipientCompany || SAMPLE_COVER_LETTER.recipientCompany}</p>
+          <p className="font-semibold" style={{ color: colors.primary }}>{recipientName || SAMPLE_COVER_LETTER.recipientName}</p>
+          <p style={{ color: colors.primary, opacity: 0.8 }}>{recipientCompany || SAMPLE_COVER_LETTER.recipientCompany}</p>
         </div>
         <div className={`whitespace-pre-wrap`}>
-          {body || SAMPLE_COVER_LETTER.body}
+          {contentBody}
         </div>
         <div className="mt-8">
           <p>Sincerely,</p>
-          <p className="mt-4">{senderName || SAMPLE_COVER_LETTER.senderName}</p>
+          <p className="mt-4 font-semibold" style={{ color: colors.primary }}>{senderName || SAMPLE_COVER_LETTER.senderName}</p>
         </div>
       </div>
     </div>
