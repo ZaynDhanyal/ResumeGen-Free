@@ -13,8 +13,7 @@ import Blog from './components/Blog';
 import Footer from './components/Footer';
 import AdminPanel from './components/AdminPanel';
 import html2canvas from 'html2canvas';
-// @ts-ignore
-import { jsPDF } from 'jspdf';
+import jsPDF from 'jspdf';
 
 interface ResumeViewWrapperProps {
   resumeData: ResumeData;
