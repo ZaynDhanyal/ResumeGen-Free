@@ -1,5 +1,22 @@
 import { ResumeData, CoverLetterData, TemplateId, Theme, FontFamily, LineHeight, FormattingOptions, BlogPost, AffiliateBanner } from './types';
 
+// Helper to format date robustly, avoiding potential issues in certain environments.
+const formatDate = (): string => {
+  try {
+    // Standard, preferred method
+    return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  } catch (e) {
+    // Fallback for environments where Intl API might be limited or fail
+    console.warn("Date formatting with Intl failed, using fallback.", e);
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${month}/${day}/${year}`;
+  }
+};
+
+
 export const EMPTY_EXPERIENCE = {
   id: '',
   jobTitle: '',
@@ -54,8 +71,7 @@ export const EMPTY_RESUME: ResumeData = {
 export const EMPTY_COVER_LETTER: CoverLetterData = {
   recipientName: '',
   recipientCompany: '',
-  // Fix: Corrected typo from toLocaleDateDateString to toLocaleDateString
-  date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+  date: formatDate(),
   body: '',
   senderName: '',
 };
@@ -129,8 +145,7 @@ export const SAMPLE_RESUME: ResumeData = {
 export const SAMPLE_COVER_LETTER: CoverLetterData = {
   recipientName: 'Hiring Manager',
   recipientCompany: 'NextGen Corp',
-  // Fix: Corrected typo from toLocaleDateDateString to toLocaleDateString
-  date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+  date: formatDate(),
   body: `Dear Hiring Manager,
 
 I am writing to express my enthusiastic interest in the Senior Product Manager position at NextGen Corp, which I discovered through LinkedIn. With my extensive experience in driving product strategy and leading high-performing teams in the tech industry, I am confident that I possess the skills and vision to contribute significantly to your company's success.

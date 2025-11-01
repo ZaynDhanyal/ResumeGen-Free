@@ -145,7 +145,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
   const handleShare = useCallback(() => {
     try {
       const jsonString = JSON.stringify(resumeData);
-      const base64String = window.btoa(unescape(encodeURIComponent(jsonString)));
+      const base64String = window.btoa(encodeURIComponent(jsonString));
       const url = `${window.location.origin}${window.location.pathname}#share=${base64String}`;
       
       navigator.clipboard.writeText(url).then(() => {

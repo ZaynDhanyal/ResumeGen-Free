@@ -143,7 +143,7 @@ const App: React.FC = () => {
     if (hash.startsWith('#share=')) {
         try {
             const base64String = hash.substring('#share='.length);
-            const jsonString = decodeURIComponent(escape(window.atob(base64String)));
+            const jsonString = decodeURIComponent(window.atob(base64String));
             const sharedResumeData: ResumeData = JSON.parse(jsonString);
 
             if (sharedResumeData && sharedResumeData.personalInfo) {
@@ -259,7 +259,7 @@ const App: React.FC = () => {
 
     setTimeout(() => {
       html2canvas(elementToPrint, {
-        scale: 6,
+        scale: 3,
         letterRendering: true,
         useCORS: true,
         width: printWidth,
