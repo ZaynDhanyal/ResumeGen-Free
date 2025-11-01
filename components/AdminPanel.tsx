@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BlogPost, AffiliateBanner } from '../types';
-import { PRE_CONFIGURED_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '../constants';
+import { PRE_CONFIGURED_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD, simpleUUID } from '../constants';
 import { LockClosedIcon, PencilIcon, TrashIcon, AddIcon, ExternalLinkIcon, LogoutIcon, MailIcon, CloseIcon } from './icons';
 
 interface AdminPanelProps {
@@ -193,7 +193,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
         }
 
         if (editingBanner!.id === '') { // Adding new
-            setAffiliateBanners(prev => [...prev, { ...editingBanner!, id: crypto.randomUUID() }]);
+            setAffiliateBanners(prev => [...prev, { ...editingBanner!, id: simpleUUID() }]);
         } else { // Updating existing
             setAffiliateBanners(prev => prev.map(b => b.id === editingBanner!.id ? editingBanner! : b));
         }

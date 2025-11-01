@@ -16,6 +16,12 @@ const formatDate = (): string => {
   }
 };
 
+/**
+ * Generates a simple, non-cryptographically secure UUID.
+ * This is used for broader browser compatibility than crypto.randomUUID().
+ */
+export const simpleUUID = (): string => `id-${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`;
+
 
 export const EMPTY_EXPERIENCE = {
   id: '',

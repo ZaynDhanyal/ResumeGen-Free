@@ -25,7 +25,7 @@ const Blog: React.FC<BlogProps> = ({ blogPosts, affiliateBanners }) => {
                 <div className="p-6">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{post.title}</h2>
                   <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    <span>By {post.author}</span> | <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <span>By {post.author}</span> | <span>{new Date(post.date + 'T00:00:00Z').toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   </div>
                   <p className="text-gray-700 dark:text-gray-300 mb-4">{post.excerpt}</p>
                   <a href="#" className="font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">Read More &rarr;</a>

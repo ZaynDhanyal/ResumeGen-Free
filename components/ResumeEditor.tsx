@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, FormattingOptions, AffiliateBanner } from '../types';
-import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
+import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS, simpleUUID } from '../constants';
 import TemplateSelector from './TemplateSelector';
 import ThemeSelector from './ThemeSelector';
 import KeywordOptimizer from './KeywordOptimizer';
@@ -80,27 +80,39 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
   useEffect(() => {
     const container = mainContainerRef.current;
     if (!container) return;
-
+  
     const handleScroll = () => {
-        const scrollPosition = container.scrollTop;
-        const threshold = 100;
-
-        // Fix: Replace findLast with a more compatible equivalent for older browsers.
-        const active = [...sections].reverse().find(section => {
-            const element = sectionRefs.current[section.id];
-            return element && element.offsetTop - threshold <= scrollPosition;
-        });
-
-        if (active && active.id !== activeSectionId) {
-            setActiveSectionId(active.id);
-        } else if (!active && activeSectionId !== 'personalInfo') {
-            setActiveSectionId('personalInfo');
+      const scrollPosition = container.scrollTop;
+      const threshold = 100;
+  
+      let currentSectionId = '';
+      // Use a standard for-loop for maximum browser compatibility
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        const element = sectionRefs.current[section.id];
+        if (element && element.offsetTop - threshold <= scrollPosition) {
+          currentSectionId = section.id;
+          break;
         }
+      }
+      
+      const newId = currentSectionId || 'personalInfo';
+
+      // Use functional update to avoid dependency on activeSectionId
+      setActiveSectionId(prevId => {
+        return newId !== prevId ? newId : prevId;
+      });
     };
-    
+  
     container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [activeSectionId]);
+    
+    // Cleanup function
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []); // Empty dependency array ensures this effect runs only once on mount.
 
 
   const handleAiClick = useCallback((type: 'summary' | 'bulletPoints', context: any, onAccept: (text: string) => void) => {
@@ -327,7 +339,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
               ))}
             </div>
             <button 
-              onClick={() => onAddItem('customDetails', { ...EMPTY_CUSTOM_DETAIL, id: crypto.randomUUID() })} 
+              onClick={() => onAddItem('customDetails', { ...EMPTY_CUSTOM_DETAIL, id: simpleUUID() })} 
               className="mt-4 flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             >
               <AddIcon className="h-5 w-5 mr-2" /> Add Custom Detail
@@ -374,7 +386,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 </div>
               </div>
             ))}
-            <button onClick={() => onAddItem('experience', { ...EMPTY_EXPERIENCE, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+            <button onClick={() => onAddItem('experience', { ...EMPTY_EXPERIENCE, id: simpleUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
               <AddIcon className="h-5 w-5 mr-2" /> Add Experience
             </button>
           </Section>
@@ -396,7 +408,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
 
               </div>
             ))}
-            <button onClick={() => onAddItem('education', { ...EMPTY_EDUCATION, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+            <button onClick={() => onAddItem('education', { ...EMPTY_EDUCATION, id: simpleUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
               <AddIcon className="h-5 w-5 mr-2" /> Add Education
             </button>
           </Section>
@@ -412,7 +424,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
               </div>
             ))}
             </div>
-            <button onClick={() => onAddItem('skills', { ...EMPTY_SKILL, id: crypto.randomUUID() })} className="mt-4 flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+            <button onClick={() => onAddItem('skills', { ...EMPTY_SKILL, id: simpleUUID() })} className="mt-4 flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
               <AddIcon className="h-5 w-5 mr-2" /> Add Skill
             </button>
           </Section>
