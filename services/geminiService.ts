@@ -3,12 +3,20 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { Experience, Skill, KeywordAnalysis, ResumeData, AtsAnalysis } from '../types';
 
-if (!process.env.API_KEY) {
-  // This is a placeholder check. The environment variable is expected to be set.
-  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
+let ai: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!process.env.API_KEY) {
+    // This error will only be thrown when an AI function is called, not on app load.
+    console.error("API_KEY environment variable not set. Gemini API calls will fail.");
+    throw new Error("Gemini API key is not configured. Please set the API_KEY environment variable.");
+  }
+  if (!ai) {
+    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return ai;
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 export async function generateSummary(jobTitle: string, experience: Experience[], skills: Skill[]): Promise<string> {
   const skillsList = skills.map(s => s.name).join(', ');
@@ -23,7 +31,8 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const client = getAiClient();
+    const response = await client.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
     });
@@ -45,7 +54,8 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
     `;
     
     try {
-        const response = await ai.models.generateContent({
+        const client = getAiClient();
+        const response = await client.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
         });
@@ -78,7 +88,8 @@ export async function generateCoverLetter(resumeData: ResumeData, recipientName:
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const client = getAiClient();
+    const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
@@ -109,7 +120,8 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const client = getAiClient();
+        const response = await client.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
@@ -162,7 +174,8 @@ export async function analyzeAtsCompatibility(resumeData: ResumeData): Promise<A
     `;
   
     try {
-      const response = await ai.models.generateContent({
+      const client = getAiClient();
+      const response = await client.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
