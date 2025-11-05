@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { Experience, Skill, KeywordAnalysis, ResumeData, AtsAnalysis } from '@/types';
+import { Experience, Skill, KeywordAnalysis, ResumeData, AtsAnalysis } from '../types';
 
 // Per coding guidelines, do not use a singleton instance of GoogleGenAI.
 function getAiClient(): GoogleGenAI {
@@ -20,19 +20,11 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
   const experienceSummary = experience.map(e => `Worked as ${e.jobTitle} at ${e.company}.`).join(' ');
   
   const prompt = `
-    Generate a professional and concise resume summary for a person with the job title "${jobTitle}".
-    The summary should be optimized with relevant industry keywords for a "${jobTitle}" role.
-    Here is the candidate's background:
-    - Experience: ${experienceSummary}.
-    - Key Skills: ${skillsList}.
-    
-    Instructions for the summary:
-    1.  It must be 3-4 sentences long.
-    2.  It must highlight the candidate's key strengths.
-    3.  It must seamlessly integrate important keywords for the "${jobTitle}" field.
-    4.  It should align with their career goals.
-    5.  The tone should be professional and confident.
-    6.  Output only the summary text, without any markdown formatting.
+    Generate a professional and concise resume summary for a "${jobTitle}".
+    The candidate has the following experience: ${experienceSummary}.
+    Key skills include: ${skillsList}.
+    The summary should be 3-4 sentences long, highlighting key strengths and career goals.
+    Do not use markdown.
   `;
 
   try {
