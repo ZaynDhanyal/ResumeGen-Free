@@ -1,15 +1,14 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-// FIX: Add Skill to import
-import { ResumeData, TemplateId, ThemeId, FormattingOptions, AffiliateBanner, ThemeMode, Skill } from '../types';
-import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, simpleUUID, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
-import TemplateSelector from './TemplateSelector';
-import ThemeSelector from './ThemeSelector';
-import KeywordOptimizer from './KeywordOptimizer';
-import AtsChecker from './AtsChecker';
-import AiSuggestionModal from './AiSuggestionModal';
-import ImageCropperModal from './ImageCropperModal';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, ArrowLeftIcon, CogIcon } from './icons';
-import ResumePreview from './ResumePreview';
+import { ResumeData, TemplateId, ThemeId, FormattingOptions, AffiliateBanner, ThemeMode, Skill } from '@/types';
+import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, simpleUUID, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '@/constants';
+import TemplateSelector from '@/components/TemplateSelector';
+import ThemeSelector from '@/components/ThemeSelector';
+import KeywordOptimizer from '@/components/KeywordOptimizer';
+import AtsChecker from '@/components/AtsChecker';
+import AiSuggestionModal from '@/components/AiSuggestionModal';
+import ImageCropperModal from '@/components/ImageCropperModal';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, ArrowLeftIcon, CogIcon } from '@/components/icons';
+import ResumePreview from '@/components/ResumePreview';
 
 interface ResumeEditorProps {
   resumeData: ResumeData;
@@ -87,14 +86,21 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
     const handleScroll = () => {
       const scrollPosition = container.scrollTop;
       const threshold = 100;
+      const containerRect = container.getBoundingClientRect();
   
       let currentSectionId = '';
       for (let i = sections.length - 1; i >= 0; i--) {
         const section = sections[i];
         const element = sectionRefs.current[section.id];
-        if (element && element.offsetTop - threshold <= scrollPosition) {
-          currentSectionId = section.id;
-          break;
+        if (element) {
+            const elementRect = element.getBoundingClientRect();
+            const offset = elementRect.top - containerRect.top;
+            const elementAbsoluteTop = container.scrollTop + offset;
+
+            if (elementAbsoluteTop - threshold <= scrollPosition) {
+              currentSectionId = section.id;
+              break;
+            }
         }
       }
       
@@ -289,9 +295,14 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   key={section.id}
                   onClick={() => {
                       const element = sectionRefs.current[section.id];
-                      if (element) {
-                          const top = element.offsetTop - 70;
-                          mainContainerRef.current?.scrollTo({ top, behavior: 'smooth' });
+                      const container = mainContainerRef.current;
+                      if (element && container) {
+                          const containerRect = container.getBoundingClientRect();
+                          const elementRect = element.getBoundingClientRect();
+                          const offset = elementRect.top - containerRect.top;
+                          const top = container.scrollTop + offset - 70;
+
+                          container.scrollTo({ top, behavior: 'smooth' });
                           setActiveSectionId(section.id);
                       }
                   }}

@@ -285,95 +285,64 @@ const App: React.FC = () => {
         return;
     }
 
-    const printWidth = 794;
-
     const isDarkMode = document.documentElement.classList.contains('dark');
     if (isDarkMode) {
       document.documentElement.classList.remove('dark');
     }
 
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'pt',
+      format: 'a4',
+    });
+
+    const a4WidthPt = pdf.internal.pageSize.getWidth();
+    const margins = { top: 40, right: 40, bottom: 40, left: 40 };
+    
+    // The cloning approach is safer to avoid side-effects on the live view.
     const elementToPrint = sourceElement.cloneNode(true) as HTMLElement;
-    elementToPrint.style.position = 'absolute';
-    elementToPrint.style.top = '-9999px';
-    elementToPrint.style.left = '0px';
-    elementToPrint.style.width = `${printWidth}px`;
-    elementToPrint.style.height = 'auto';
+    const container = document.createElement('div');
+    // Position off-screen
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '0px';
+    // Set width to match A4 paper for accurate layout rendering.
+    container.style.width = `${a4WidthPt}pt`;
+    container.appendChild(elementToPrint);
+    document.body.appendChild(container);
 
-    document.body.appendChild(elementToPrint);
-
-    setTimeout(() => {
-      html2canvas(elementToPrint, {
-        scale: 3,
-        letterRendering: true,
-        useCORS: true,
-        width: printWidth,
-        height: elementToPrint.scrollHeight,
-        windowWidth: printWidth,
-        windowHeight: elementToPrint.scrollHeight,
-        backgroundColor: null,
-      }).then(canvas => {
-        document.body.removeChild(elementToPrint);
+    pdf.html(elementToPrint, {
+      callback: (doc) => {
+        doc.save(filename);
+        // Cleanup
+        document.body.removeChild(container);
         if (isDarkMode) {
           document.documentElement.classList.add('dark');
         }
-
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-
-        const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
-        const currentColors = (isDarkMode && selectedTheme.dark) ? selectedTheme.dark : selectedTheme.colors;
-        const pageFillColor = elementId === 'cover-letter-preview'
-            ? currentColors.secondary
-            : currentColors.background;
-        
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        
-        const pageCanvasHeight = (canvasWidth * pdfHeight) / pdfWidth;
-        
-        let canvasPosition = 0;
-        let pageCount = 0;
-        
-        while (canvasPosition < canvasHeight) {
-            pageCount++;
-            if (pageCount > 1) {
-                pdf.addPage();
-            }
-
-            const pageCanvas = document.createElement('canvas');
-            pageCanvas.width = canvasWidth;
-            pageCanvas.height = pageCanvasHeight;
-            const pageCtx = pageCanvas.getContext('2d');
-            
-            if (pageCtx) {
-                pageCtx.fillStyle = pageFillColor;
-                pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-                
-                const sliceHeight = Math.min(pageCanvasHeight, canvasHeight - canvasPosition);
-                pageCtx.drawImage(canvas, 0, canvasPosition, canvasWidth, sliceHeight, 0, 0, canvasWidth, sliceHeight);
-                
-                const pageImgData = pageCanvas.toDataURL('image/png');
-                pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            }
-            
-            canvasPosition += pageCanvasHeight;
-        }
-        
-        pdf.save(filename);
-      }).catch(err => {
-        console.error("html2canvas failed:", err);
-        document.body.removeChild(elementToPrint);
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-        }
-      });
-    }, 200);
-  }, [themeId]);
+      },
+      autoPaging: 'text',
+      margin: [margins.top, margins.right, margins.bottom, margins.left],
+      // The content width in the PDF will be the page width minus horizontal margins.
+      width: a4WidthPt - margins.left - margins.right,
+      // The width of the browser window to simulate for rendering.
+      windowWidth: a4WidthPt,
+      html2canvas: {
+        scale: 2, // Higher scale for better image quality.
+        useCORS: true,
+        letterRendering: true,
+        // Capture full height of the element.
+        height: elementToPrint.scrollHeight,
+        windowHeight: elementToPrint.scrollHeight
+      },
+    }).catch((error) => {
+      console.error("PDF generation failed:", error);
+      // Cleanup on error
+      document.body.removeChild(container);
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      }
+    });
+  }, []);
 
   const sanitizeFilename = (name: string) => {
     return name.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'document';
