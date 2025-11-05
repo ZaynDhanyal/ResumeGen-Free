@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { LogoIcon, MenuIcon, CloseIcon, SunIcon, MoonIcon } from './icons';
 import { ThemeMode } from '../types';
 
@@ -11,8 +11,9 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const { pathname } = useLocation();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const pathname = location.pathname;
+  const searchParams = new URLSearchParams(location.search);
 
   const isAdminVisible = searchParams.get('admin') === 'true';
 

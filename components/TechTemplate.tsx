@@ -1,5 +1,4 @@
 import React from 'react';
-// FIX: Changed import path for TemplateProps from './ResumePreview' to '../types'
 import { TemplateProps } from '../types';
 import { SAMPLE_RESUME, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 

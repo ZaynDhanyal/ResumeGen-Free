@@ -1,13 +1,14 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ResumeData, TemplateId, ThemeId, FormattingOptions, AffiliateBanner, ThemeMode } from '../types';
-import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, simpleUUID } from '../constants';
+// FIX: Add Skill to import
+import { ResumeData, TemplateId, ThemeId, FormattingOptions, AffiliateBanner, ThemeMode, Skill } from '../types';
+import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, simpleUUID, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 import TemplateSelector from './TemplateSelector';
 import ThemeSelector from './ThemeSelector';
 import KeywordOptimizer from './KeywordOptimizer';
 import AtsChecker from './AtsChecker';
 import AiSuggestionModal from './AiSuggestionModal';
 import ImageCropperModal from './ImageCropperModal';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, ArrowLeftIcon } from './icons';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, ArrowLeftIcon, CogIcon } from './icons';
 import ResumePreview from './ResumePreview';
 
 interface ResumeEditorProps {
@@ -240,6 +241,45 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
               </div>
               <ThemeSelector selectedTheme={themeId} onSelectTheme={setThemeId} />
           </div>
+          <div className="mt-6 border-t dark:border-gray-700 pt-6">
+            <div className="flex items-center mb-4">
+                <CogIcon className="h-6 w-6 text-blue-600" />
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 ml-3">Formatting Options</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="font-family" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Font Family</label>
+                    <select
+                        id="font-family"
+                        value={formattingOptions.fontFamily}
+                        onChange={e => setFormattingOptions({ ...formattingOptions, fontFamily: e.target.value as any })}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    >
+                        {FONT_OPTIONS.map(font => (
+                            <option key={font.id} value={font.id}>{font.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Line Height</label>
+                    <div className="flex space-x-2 rounded-md bg-gray-100 dark:bg-gray-700 p-1">
+                        {LINE_HEIGHT_OPTIONS.map(option => (
+                            <button
+                                key={option.id}
+                                onClick={() => setFormattingOptions({ ...formattingOptions, lineHeight: option.id })}
+                                className={`w-full text-center px-3 py-1 text-sm rounded-md transition-colors ${
+                                    formattingOptions.lineHeight === option.id
+                                    ? 'bg-blue-600 text-white shadow'
+                                    : 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                {option.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+          </div>
         </div>
         
         <div className="lg:hidden sticky top-0 z-30 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm py-2 px-2 -mx-2 shadow-sm">
@@ -426,7 +466,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   <div className="flex items-center justify-between">
                     <select
                         value={skill.level}
-                        onChange={e => handleUpdateField('skills', index, 'level', e.target.value)}
+                        onChange={e => handleUpdateField('skills', index, 'level', e.target.value as Skill['level'])}
                         aria-label={`Skill level for ${skill.name}`}
                         className="w-full text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
                     >

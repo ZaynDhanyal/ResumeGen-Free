@@ -7,6 +7,9 @@ import ModernTemplate from './ModernTemplate';
 import CreativeTemplate from './CreativeTemplate';
 import TechTemplate from './TechTemplate';
 import MinimalistTemplate from './MinimalistTemplate';
+import CorporateTemplate from './CorporateTemplate';
+import ElegantTemplate from './ElegantTemplate';
+import InfographicTemplate from './InfographicTemplate';
 
 interface TemplateSelectorProps {
   selected: TemplateId;
@@ -20,6 +23,9 @@ const templates = {
   creative: CreativeTemplate,
   tech: TechTemplate,
   minimalist: MinimalistTemplate,
+  corporate: CorporateTemplate,
+  elegant: ElegantTemplate,
+  infographic: InfographicTemplate,
 };
 
 
@@ -46,7 +52,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect,
   return (
     <div>
       <h3 className="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">Select a Template</h3>
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4">
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 sm:gap-4">
         {TEMPLATES.map(template => (
           <button
             key={template.id}

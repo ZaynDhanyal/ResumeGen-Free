@@ -8,6 +8,9 @@ import ModernTemplate from './ModernTemplate';
 import CreativeTemplate from './CreativeTemplate';
 import TechTemplate from './TechTemplate';
 import MinimalistTemplate from './MinimalistTemplate';
+import CorporateTemplate from './CorporateTemplate';
+import ElegantTemplate from './ElegantTemplate';
+import InfographicTemplate from './InfographicTemplate';
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -23,6 +26,9 @@ const templates: { [key in TemplateId]: React.FC<TemplateProps> } = {
   creative: CreativeTemplate,
   tech: TechTemplate,
   minimalist: MinimalistTemplate,
+  corporate: CorporateTemplate,
+  elegant: ElegantTemplate,
+  infographic: InfographicTemplate,
 };
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId, formattingOptions, themeMode }) => {

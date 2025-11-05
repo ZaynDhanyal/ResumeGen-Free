@@ -280,7 +280,10 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         });
 
         const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
-        const pageFillColor = selectedTheme.colors.secondary;
+        const currentColors = (isDarkMode && selectedTheme.dark) ? selectedTheme.dark : selectedTheme.colors;
+        const pageFillColor = elementId === 'cover-letter-preview'
+            ? currentColors.secondary
+            : currentColors.background;
         
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
