@@ -190,7 +190,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
 
   return (
     <>
-      <div ref={mainContainerRef} className="h-full overflow-y-auto pr-0 lg:pr-4">
+      <div ref={mainContainerRef} className="relative h-full overflow-y-auto pr-0 lg:pr-4">
         {modalOpen && modalConfig && (
           <AiSuggestionModal
             type={modalConfig.type}

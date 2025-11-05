@@ -15,7 +15,7 @@ const CorporateTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, t
 
     const Section: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
         <section className={`mb-6 ${className}`}>
-            <h2 className="text-lg font-bold uppercase tracking-wider border-b-2 pb-1 mb-3" style={{ borderBottomColor: colors.primary, color: colors.primary }}>
+            <h2 className="text-lg font-bold uppercase tracking-wider border-b-2 pb-1 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>
                 {title}
             </h2>
             {children}
@@ -23,13 +23,13 @@ const CorporateTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, t
     );
 
     return (
-        <div className={`p-4 sm:p-6 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
-            <header className="text-left mb-6 pb-4 border-b-4" style={{ borderBottomColor: colors.secondary }}>
-                <h1 className="text-4xl font-extrabold" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
-                <p className="text-xl font-medium">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
+        <div className={`p-10 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
+            <header className="text-left mb-6 pb-4 border-b-4" style={{ borderBottomColor: colors.primary }}>
+                <h1 className="text-4xl font-extrabold">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
+                <p className="text-xl font-medium" style={{ color: colors.primary, opacity: 0.9 }}>{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
             </header>
 
-            <div className="grid grid-cols-12 gap-6">
+            <div className="grid grid-cols-12 gap-8">
                 <aside className="col-span-12 md:col-span-4">
                     <Section title="Contact">
                         <div className="space-y-1 text-sm">
@@ -37,7 +37,6 @@ const CorporateTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, t
                             <p>{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
                             <p>{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
                             <p className="break-all">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
-                            <p className="break-all">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
                         </div>
                     </Section>
                      {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
@@ -61,18 +60,9 @@ const CorporateTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, t
                     <Section title="Skills">
                         <ul className="space-y-1">
                             {skillsToRender.map(skill => (
-                                <li key={skill.id} className="text-sm px-2 py-1 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>{skill.name}</li>
+                                <li key={skill.id} className="text-sm">{skill.name}</li>
                             ))}
                         </ul>
-                    </Section>
-                    <Section title="Education">
-                        {educationToRender.map(edu => (
-                            <div key={edu.id} className="mb-3 text-sm">
-                                <h3 className="font-bold">{edu.degree}</h3>
-                                <p className="italic">{edu.institution}</p>
-                                <p style={{ opacity: 0.8 }}>{edu.startDate} - {edu.endDate}</p>
-                            </div>
-                        ))}
                     </Section>
                 </aside>
 
@@ -85,12 +75,23 @@ const CorporateTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, t
                             <div key={exp.id} className="mb-4">
                                 <div className="flex justify-between items-baseline">
                                     <h3 className="text-lg font-semibold">{exp.jobTitle}</h3>
-                                    <p className="text-sm" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
+                                    <p className="text-sm font-mono" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
                                 </div>
                                 <p className="text-md font-medium">{exp.company}, {exp.location}</p>
                                 <ul className="list-disc list-inside mt-1 text-sm space-y-1">
                                     {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
                                 </ul>
+                            </div>
+                        ))}
+                    </Section>
+                    <Section title="Education">
+                        {educationToRender.map(edu => (
+                            <div key={edu.id} className="mb-3 text-sm">
+                                <h3 className="font-bold">{edu.degree}</h3>
+                                <div className="flex justify-between items-baseline">
+                                    <p className="italic">{edu.institution}</p>
+                                    <p className="font-mono" style={{ opacity: 0.8 }}>{edu.startDate} - {edu.endDate}</p>
+                                </div>
                             </div>
                         ))}
                     </Section>

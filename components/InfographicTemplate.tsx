@@ -3,14 +3,9 @@ import { TemplateProps } from '../types';
 import { SAMPLE_RESUME, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 import { MailIcon, PhoneIcon, LocationMarkerIcon, LinkIcon, GlobeAltIcon, ExperienceIcon, EducationIcon, SkillsIcon } from './icons';
 
-const skillLevelToPercentage = (level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert') => {
-    switch (level) {
-        case 'Beginner': return '25%';
-        case 'Intermediate': return '50%';
-        case 'Advanced': return '75%';
-        case 'Expert': return '100%';
-        default: return '0%';
-    }
+const skillLevelToDots = (level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert') => {
+    const levels = { 'Beginner': 2, 'Intermediate': 3, 'Advanced': 4, 'Expert': 5 };
+    return levels[level] || 0;
 };
 
 const InfographicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
@@ -35,8 +30,22 @@ const InfographicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting,
         </section>
     );
 
+    const TimelineItem: React.FC<{ item: any; isExp?: boolean }> = ({ item, isExp = false }) => (
+        <div className="relative pl-8">
+            <div className="absolute -left-[5px] top-1 w-3 h-3 rounded-full" style={{ backgroundColor: colors.background, border: `2px solid ${colors.primary}` }}></div>
+            <p className="text-xs font-mono absolute -top-5 right-0" style={{ opacity: 0.7 }}>{item.startDate} - {item.endDate}</p>
+            <h3 className="text-lg font-bold">{isExp ? item.jobTitle : item.degree}</h3>
+            <p className="text-md font-semibold">{isExp ? item.company : item.institution}, {item.location}</p>
+            {isExp && (
+                <ul className="list-disc list-inside mt-2 text-sm space-y-1">
+                    {item.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
+                </ul>
+            )}
+        </div>
+    );
+
     return (
-        <div className={`p-4 sm:p-8 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
+        <div className={`p-10 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
             <header className="text-center mb-8 p-6 rounded-lg" style={{ backgroundColor: colors.secondary }}>
                 <h1 className="text-4xl sm:text-5xl font-extrabold" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
                 <p className="text-lg sm:text-xl mt-1 font-light">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
@@ -55,30 +64,12 @@ const InfographicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting,
                 <div>
                     <Section title="Experience" icon={<ExperienceIcon className="h-6 w-6" />}>
                         <div className="relative border-l-2 pl-8 space-y-8" style={{ borderColor: colors.primary }}>
-                            {experiencesToRender.map((exp, index) => (
-                                <div key={exp.id} className="relative">
-                                    <div className="absolute -left-[41px] top-1 w-4 h-4 rounded-full" style={{ backgroundColor: colors.background, border: `2px solid ${colors.primary}` }}></div>
-                                    <p className="text-xs font-mono absolute -top-5 right-0" style={{ opacity: 0.7 }}>{exp.startDate} - {exp.endDate}</p>
-                                    <h3 className="text-lg font-bold">{exp.jobTitle}</h3>
-                                    <p className="text-md font-semibold">{exp.company}, {exp.location}</p>
-                                    <ul className="list-disc list-inside mt-2 text-sm space-y-1">
-                                        {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
-                                    </ul>
-                                </div>
-                            ))}
+                            {experiencesToRender.map((exp) => <TimelineItem key={exp.id} item={exp} isExp />)}
                         </div>
                     </Section>
-
                     <Section title="Education" icon={<EducationIcon className="h-6 w-6" />}>
                         <div className="relative border-l-2 pl-8 space-y-8" style={{ borderColor: colors.primary }}>
-                            {educationToRender.map(edu => (
-                                <div key={edu.id} className="relative">
-                                    <div className="absolute -left-[41px] top-1 w-4 h-4 rounded-full" style={{ backgroundColor: colors.background, border: `2px solid ${colors.primary}` }}></div>
-                                    <p className="text-xs font-mono absolute -top-5 right-0" style={{ opacity: 0.7 }}>{edu.startDate} - {edu.endDate}</p>
-                                    <h3 className="text-lg font-bold">{edu.degree}</h3>
-                                    <p className="text-md font-semibold">{edu.institution}, {edu.location}</p>
-                                </div>
-                            ))}
+                            {educationToRender.map(edu => <TimelineItem key={edu.id} item={edu} />)}
                         </div>
                     </Section>
                 </div>
@@ -89,10 +80,15 @@ const InfographicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting,
                                 <div key={skill.id}>
                                     <div className="flex justify-between items-center mb-1">
                                         <p className="text-sm font-semibold">{skill.name}</p>
-                                        <p className="text-xs font-mono">{skill.level}</p>
-                                    </div>
-                                    <div className="w-full rounded-full h-2.5" style={{ backgroundColor: colors.secondary }}>
-                                        <div className="h-2.5 rounded-full" style={{ width: skillLevelToPercentage(skill.level), backgroundColor: colors.primary }}></div>
+                                        <div className="flex space-x-1">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <span
+                                                    key={i}
+                                                    className="h-3 w-3 rounded-full"
+                                                    style={{ backgroundColor: i < skillLevelToDots(skill.level) ? colors.primary : 'rgba(0,0,0,0.1)' }}
+                                                ></span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             ))}

@@ -36,7 +36,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, t
   const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden relative">
+    <div className="relative">
         <div className="lg:hidden absolute top-4 right-4 z-10">
             <Link
                 to="/resume"
@@ -46,7 +46,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, t
                 Edit
             </Link>
         </div>
-        <div id="resume-preview">
+        <div id="resume-preview" className="w-full max-w-[794px] mx-auto bg-white dark:bg-gray-800 shadow-lg">
             <TemplateComponent data={resumeData} theme={selectedTheme} formatting={formattingOptions} themeMode={themeMode} />
         </div>
     </div>

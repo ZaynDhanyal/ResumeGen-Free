@@ -30,7 +30,7 @@ const CoverLetterPreview: React.FC<CoverLetterPreviewProps> = ({ coverLetterData
   const dynamicTextStyles = getDynamicStyles(contentBody);
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden relative">
+    <div className="relative">
       <div className="lg:hidden absolute top-4 right-4 z-10">
           <Link
               to="/cover-letter"
@@ -42,7 +42,7 @@ const CoverLetterPreview: React.FC<CoverLetterPreviewProps> = ({ coverLetterData
       </div>
       <div 
         id="cover-letter-preview" 
-        className={`p-8 sm:p-12 font-serif min-h-[297mm] ${dynamicTextStyles}`}
+        className={`w-full max-w-[794px] mx-auto shadow-lg font-serif min-h-[297mm] p-10 ${dynamicTextStyles}`}
         style={{ backgroundColor: colors.secondary, color: colors.text }}
       >
         <div className="mb-8 text-left">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TemplateProps } from '../types';
 import { SAMPLE_RESUME, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
-import { PersonalInfoIcon } from './icons';
+import { UserCircleIcon } from './icons';
 
 const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
     const { personalInfo, summary, experience, education, skills, customDetails } = data;
@@ -14,78 +14,96 @@ const CreativeTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, th
     const skillsToRender = skills.length > 0 ? skills : SAMPLE_RESUME.skills;
     const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
 
-    const creativeBg = themeMode === 'dark' ? '#1F2937' : '#FFFFFF';
-    const creativeTextColor = themeMode === 'dark' ? '#F9FAFB' : '#111827';
     const creativeAsideTextColor = '#FFFFFF';
 
+    const Section: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
+        <section className={`mb-6 ${className}`}>
+            <h2 className="text-lg font-bold uppercase tracking-wider border-b-2 border-white/30 pb-1 mb-3">
+                {title}
+            </h2>
+            {children}
+        </section>
+      );
+
     return (
-        <div className={`${fontClass} ${lineHeightClass} grid grid-cols-1 md:grid-cols-3`}>
-            <aside className="col-span-1 p-8 text-center md:text-left" style={{ backgroundColor: colors.primary, color: creativeAsideTextColor }}>
-                {personalInfo.profilePicture ? (
-                    <img src={personalInfo.profilePicture} alt="Profile" className="rounded-full w-40 h-40 mx-auto mb-6 border-4 border-white shadow-lg object-cover"/>
-                ) : (
-                    <div className="rounded-full w-40 h-40 mx-auto mb-6 border-4 border-white shadow-lg bg-gray-200/50 flex items-center justify-center">
-                        <PersonalInfoIcon className="h-20 w-20 text-white/80" />
-                    </div>
-                )}
-                <section className="mb-6">
-                    <h2 className="text-lg font-bold uppercase mb-2 border-b border-white/50 pb-1">Contact</h2>
-                    <p className="text-sm mb-1 break-words">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
-                    <p className="text-sm mb-1">{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
-                </section>
-                {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
-                    <section className="mb-6">
-                        <h2 className="text-lg font-bold uppercase mb-2 border-b border-white/50 pb-1">Details</h2>
-                            {personalInfo.nationality && (
-                            <div className="text-sm mb-2 mt-2">
-                                <p className="font-semibold">Nationality</p>
-                                <p className="opacity-90">{personalInfo.nationality}</p>
-                            </div>
-                            )}
-                            {customDetailsToRender.map(detail => (
-                            <div key={detail.id} className="text-sm mb-2">
-                                <p className="font-semibold">{detail.label}</p>
-                                <p className="opacity-90">{detail.value}</p>
-                            </div>
-                        ))}
-                    </section>
-                )}
-                <section className="mb-6">
-                    <h2 className="text-lg font-bold uppercase mb-2 border-b border-white/50 pb-1">Education</h2>
-                    {educationToRender.map(edu => (
-                        <div key={edu.id} className="mb-2 mt-2">
-                            <h3 className="font-bold text-sm">{edu.degree}</h3>
-                            <p className="text-xs italic">{edu.institution}</p>
+        <div className={`${fontClass} ${lineHeightClass} grid grid-cols-12 min-h-[297mm]`}>
+            <aside className="col-span-12 md:col-span-4 p-10" style={{ backgroundColor: colors.primary, color: creativeAsideTextColor }}>
+                <div className="flex flex-col items-center text-center">
+                    {personalInfo.profilePicture ? (
+                        <img src={personalInfo.profilePicture} alt="Profile" className="rounded-full w-32 h-32 mb-4 border-4 border-white/50 shadow-lg object-cover"/>
+                    ) : (
+                        <div className="rounded-full w-32 h-32 mb-4 border-4 border-white/50 shadow-lg bg-white/20 flex items-center justify-center">
+                            <UserCircleIcon className="h-20 w-20 text-white/80" />
                         </div>
-                    ))}
-                </section>
+                    )}
+                    <h1 className="text-3xl font-bold">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
+                    <p className="text-md opacity-90">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
+                </div>
+                <div className="mt-8 space-y-6 text-sm">
+                    <Section title="Contact">
+                        <div className="space-y-1 text-xs">
+                            <p className="break-words">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
+                            <p>{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
+                            <p>{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
+                            <p className="break-words">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
+                        </div>
+                    </Section>
+                    {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
+                        <Section title="Details">
+                            <div className="space-y-2 text-xs">
+                                {personalInfo.nationality && (
+                                    <div>
+                                        <p className="font-semibold">Nationality</p>
+                                        <p className="opacity-90">{personalInfo.nationality}</p>
+                                    </div>
+                                )}
+                                {customDetailsToRender.map(detail => (
+                                    <div key={detail.id}>
+                                        <p className="font-semibold">{detail.label}</p>
+                                        <p className="opacity-90">{detail.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </Section>
+                    )}
+                    <Section title="Skills">
+                        <div className="flex flex-wrap gap-2">
+                            {skillsToRender.map(skill => <span key={skill.id} className="inline-flex items-center text-xs px-2 py-1 rounded bg-white/20">{skill.name}</span>)}
+                        </div>
+                    </Section>
+                </div>
             </aside>
-            <main className="col-span-1 md:col-span-2 p-8" style={{ backgroundColor: creativeBg, color: creativeTextColor }}>
-                <header className="mb-8 text-center md:text-left">
-                    <h1 className="text-5xl font-extrabold" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
-                    <p className="text-xl" style={{ opacity: 0.8 }}>{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
-                </header>
+            <main className="col-span-12 md:col-span-8 p-10" style={{ backgroundColor: colors.background, color: colors.text }}>
                 <section className="mb-6">
-                    <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Summary</h2>
+                    <h2 className="text-2xl font-bold uppercase mb-3" style={{ color: colors.primary }}>Summary</h2>
                     <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>
                 </section>
                 <section className="mb-6">
-                    <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Experience</h2>
+                    <h2 className="text-2xl font-bold uppercase mb-3" style={{ color: colors.primary }}>Experience</h2>
                     {experiencesToRender.map(exp => (
                         <div key={exp.id} className="mb-4">
-                            <h3 className="text-lg font-semibold">{exp.jobTitle} at {exp.company}</h3>
-                            <p className="text-xs" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
-                            <ul className="list-disc list-inside mt-1 text-sm space-y-1">
+                            <h3 className="text-lg font-semibold">{exp.jobTitle}</h3>
+                            <div className="flex justify-between items-baseline text-sm opacity-80 mb-1">
+                                <p className="font-medium">{exp.company}, {exp.location}</p>
+                                <p>{exp.startDate} - {exp.endDate}</p>
+                            </div>
+                            <ul className="list-disc list-inside text-sm space-y-1">
                                 {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
                             </ul>
                         </div>
                     ))}
                 </section>
-                    <section>
-                    <h2 className="text-xl font-bold uppercase mb-2" style={{ color: colors.primary }}>Skills</h2>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                        {skillsToRender.map(skill => <span key={skill.id} className="inline-flex items-center text-sm px-3 py-1 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>{skill.name}</span>)}
-                    </div>
+                <section>
+                    <h2 className="text-2xl font-bold uppercase mb-3" style={{ color: colors.primary }}>Education</h2>
+                    {educationToRender.map(edu => (
+                        <div key={edu.id} className="mb-2">
+                            <h3 className="font-bold text-lg">{edu.degree}</h3>
+                            <div className="flex justify-between items-baseline text-sm opacity-80">
+                                <p className="italic">{edu.institution}, {edu.location}</p>
+                                <p>{edu.startDate} - {edu.endDate}</p>
+                            </div>
+                        </div>
+                    ))}
                 </section>
             </main>
         </div>

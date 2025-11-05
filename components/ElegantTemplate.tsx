@@ -14,20 +14,22 @@ const ElegantTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, the
     const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
 
     const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-        <section className="mb-8">
-            <h2 className="text-2xl font-serif font-bold mb-4" style={{ color: colors.primary }}>{title}</h2>
-            <div className="border-l-2 pl-6" style={{ borderColor: colors.secondary }}>
+        <section className="mb-8 grid grid-cols-12 gap-4">
+            <div className="col-span-12 md:col-span-3">
+                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: colors.primary }}>{title}</h2>
+            </div>
+            <div className="col-span-12 md:col-span-9">
                 {children}
             </div>
         </section>
     );
 
     return (
-        <div className={`p-6 sm:p-12 min-h-[297mm] font-serif ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
-            <header className="text-center mb-10">
+        <div className={`p-10 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
+            <header className="text-center mb-10 pb-6 border-b" style={{ borderColor: colors.secondary }}>
                 <h1 className="text-5xl font-serif font-bold tracking-tight">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
-                <p className="text-lg mt-1 font-sans">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
-                <div className="flex justify-center flex-wrap items-center space-x-4 text-xs mt-4 font-sans opacity-80">
+                <p className="text-lg mt-1">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
+                <div className="flex justify-center flex-wrap items-center space-x-4 text-xs mt-4 opacity-80">
                     <span>{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</span>
                     <span>&bull;</span>
                     <span>{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</span>
@@ -37,37 +39,18 @@ const ElegantTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, the
             </header>
 
             <Section title="Summary">
-                <p className="text-sm font-sans">{summary || SAMPLE_RESUME.summary}</p>
+                <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>
             </Section>
-
-            {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
-                <Section title="Details">
-                    <div className="grid grid-cols-2 gap-4 text-sm font-sans">
-                        {personalInfo.nationality && (
-                             <div>
-                                <p className="font-semibold">Nationality</p>
-                                <p>{personalInfo.nationality}</p>
-                            </div>
-                        )}
-                        {customDetailsToRender.map(detail => (
-                            <div key={detail.id}>
-                                <p className="font-semibold">{detail.label}</p>
-                                <p>{detail.value}</p>
-                            </div>
-                        ))}
-                    </div>
-                </Section>
-            )}
 
             <Section title="Experience">
                 {experiencesToRender.map(exp => (
                     <div key={exp.id} className="mb-6">
                         <div className="flex justify-between items-baseline">
-                            <h3 className="text-lg font-sans font-bold">{exp.jobTitle}</h3>
-                            <p className="text-xs font-sans opacity-70">{exp.startDate} - {exp.endDate}</p>
+                            <h3 className="text-lg font-bold">{exp.jobTitle}</h3>
+                            <p className="text-xs opacity-70">{exp.startDate} - {exp.endDate}</p>
                         </div>
-                        <p className="text-md font-sans font-semibold">{exp.company}, {exp.location}</p>
-                        <ul className="list-disc list-inside mt-2 text-sm font-sans space-y-1">
+                        <p className="text-md font-semibold">{exp.company}, {exp.location}</p>
+                        <ul className="list-disc list-inside mt-2 text-sm space-y-1">
                              {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
                         </ul>
                     </div>
@@ -78,18 +61,18 @@ const ElegantTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, the
                 {educationToRender.map(edu => (
                     <div key={edu.id} className="mb-4">
                         <div className="flex justify-between items-baseline">
-                            <h3 className="text-lg font-sans font-bold">{edu.degree}</h3>
-                            <p className="text-xs font-sans opacity-70">{edu.startDate} - {edu.endDate}</p>
+                            <h3 className="text-lg font-bold">{edu.degree}</h3>
+                            <p className="text-xs opacity-70">{edu.startDate} - {edu.endDate}</p>
                         </div>
-                        <p className="text-md font-sans font-semibold">{edu.institution}, {edu.location}</p>
+                        <p className="text-md font-semibold">{edu.institution}, {edu.location}</p>
                     </div>
                 ))}
             </Section>
 
             <Section title="Skills">
-                <div className="flex flex-wrap gap-2 font-sans">
+                <div className="flex flex-wrap gap-2">
                     {skillsToRender.map(skill => (
-                        <span key={skill.id} className="text-sm font-medium px-3 py-1 border-2 rounded-full" style={{ borderColor: colors.secondary, color: colors.primary }}>
+                        <span key={skill.id} className="text-sm font-medium px-3 py-1 border rounded" style={{ borderColor: colors.secondary, color: colors.text }}>
                             {skill.name}
                         </span>
                     ))}

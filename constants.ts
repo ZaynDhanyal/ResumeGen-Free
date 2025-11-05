@@ -154,14 +154,14 @@ I am particularly impressed by NextGen Corp's work in [Mention a specific projec
 };
 
 export const TEMPLATES: { id: TemplateId; name: string; imageUrl: string }[] = [
-  { id: 'classic', name: 'Classic', imageUrl: 'https://picsum.photos/seed/classic-template/400/518' },
-  { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/modern-template/400/518' },
-  { id: 'creative', name: 'Creative', imageUrl: 'https://picsum.photos/seed/creative-template/400/518' },
-  { id: 'tech', name: 'Tech', imageUrl: 'https://picsum.photos/seed/tech-template/400/518' },
-  { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://picsum.photos/seed/minimalist-template/400/518' },
-  { id: 'corporate', name: 'Corporate', imageUrl: 'https://picsum.photos/seed/corporate-template/400/518' },
-  { id: 'elegant', name: 'Elegant', imageUrl: 'https://picsum.photos/seed/elegant-template/400/518' },
-  { id: 'infographic', name: 'Infographic', imageUrl: 'https://picsum.photos/seed/infographic-template/400/518' },
+  { id: 'classic', name: 'Classic', imageUrl: 'https://picsum.photos/seed/classic-resume/400/518' },
+  { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/modern-resume/400/518' },
+  { id: 'creative', name: 'Creative', imageUrl: 'https://picsum.photos/seed/creative-resume/400/518' },
+  { id: 'tech', name: 'Tech', imageUrl: 'https://picsum.photos/seed/tech-resume/400/518' },
+  { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://picsum.photos/seed/minimalist-resume/400/518' },
+  { id: 'corporate', name: 'Corporate', imageUrl: 'https://picsum.photos/seed/corporate-resume/400/518' },
+  { id: 'elegant', name: 'Elegant', imageUrl: 'https://picsum.photos/seed/elegant-resume/400/518' },
+  { id: 'infographic', name: 'Infographic', imageUrl: 'https://picsum.photos/seed/infographic-resume/400/518' },
 ];
 
 export const THEMES: Theme[] = [
