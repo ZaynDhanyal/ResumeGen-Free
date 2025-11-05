@@ -15,9 +15,6 @@ type AdminAuthView = 'login' | 'forgot' | 'reset';
 type ValidationErrors = { [key: string]: string };
 
 const getAdminPassword = (): string => {
-    // SECURITY NOTE: This is for a client-side only application. In a real-world scenario,
-    // authentication should be handled by a secure backend service, not by storing
-    // a password in localStorage.
     try {
         return localStorage.getItem('adminPassword') || DEFAULT_ADMIN_PASSWORD;
     } catch {
@@ -47,7 +44,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
     const [activeTab, setActiveTab] = useState<AdminTab>('blog');
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
-    // --- Auth State ---
     const [authView, setAuthView] = useState<AdminAuthView>('login');
     const [passwordInput, setPasswordInput] = useState('');
     const [emailInput, setEmailInput] = useState('');
@@ -57,7 +53,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
     const [authError, setAuthError] = useState('');
     const [authMessage, setAuthMessage] = useState('');
 
-    // --- Modals and Editing State ---
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
@@ -156,9 +151,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
             return;
         }
 
-        if (editingPost!.id === 0) { // Adding new
+        if (editingPost!.id === 0) {
             setBlogPosts(prev => [...prev, { ...editingPost!, id: Date.now() }]);
-        } else { // Updating existing
+        } else {
             setBlogPosts(prev => prev.map(p => p.id === editingPost!.id ? editingPost! : p));
         }
         setIsPostModalOpen(false);
@@ -192,9 +187,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
             return;
         }
 
-        if (editingBanner!.id === '') { // Adding new
+        if (editingBanner!.id === '') {
             setAffiliateBanners(prev => [...prev, { ...editingBanner!, id: simpleUUID() }]);
-        } else { // Updating existing
+        } else {
             setAffiliateBanners(prev => prev.map(b => b.id === editingBanner!.id ? editingBanner! : b));
         }
         setIsBannerModalOpen(false);
@@ -320,7 +315,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                 <button onClick={() => setActiveTab('adsense')} className={tabButtonClasses('adsense')}>AdSense</button>
             </div>
 
-            {/* BLOG POSTS TAB */}
             {activeTab === 'blog' && (
                 <div>
                     <div className="flex justify-end mb-4">
@@ -350,7 +344,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                 </div>
             )}
             
-            {/* AFFILIATE BANNERS TAB */}
             {activeTab === 'affiliates' && (
                  <div>
                     <div className="flex justify-end mb-4">
@@ -393,7 +386,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                 </div>
             )}
             
-            {/* Blog Post Modal */}
             {isPostModalOpen && editingPost && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl">
@@ -419,7 +411,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                 </div>
             )}
 
-            {/* Affiliate Banner Modal */}
             {isBannerModalOpen && editingBanner && (
                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl">

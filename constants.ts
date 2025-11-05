@@ -1,12 +1,9 @@
 import { ResumeData, CoverLetterData, TemplateId, Theme, FontFamily, LineHeight, FormattingOptions, BlogPost, AffiliateBanner } from './types';
 
-// Helper to format date robustly, avoiding potential issues in certain environments.
 const formatDate = (): string => {
   try {
-    // Standard, preferred method
     return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   } catch (e) {
-    // Fallback for environments where Intl API might be limited or fail
     console.warn("Date formatting with Intl failed, using fallback.", e);
     const d = new Date();
     const year = d.getFullYear();
@@ -16,12 +13,7 @@ const formatDate = (): string => {
   }
 };
 
-/**
- * Generates a simple, non-cryptographically secure UUID.
- * This is used for broader browser compatibility than crypto.randomUUID().
- */
 export const simpleUUID = (): string => `id-${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`;
-
 
 export const EMPTY_EXPERIENCE = {
   id: '',
@@ -81,7 +73,6 @@ export const EMPTY_COVER_LETTER: CoverLetterData = {
   body: '',
   senderName: '',
 };
-
 
 export const SAMPLE_RESUME: ResumeData = {
   personalInfo: {
@@ -163,11 +154,11 @@ I am particularly impressed by NextGen Corp's work in [Mention a specific projec
 };
 
 export const TEMPLATES: { id: TemplateId; name: string; imageUrl: string }[] = [
-  { id: 'classic', name: 'Classic', imageUrl: 'https://picsum.photos/seed/classic-template/200/280' },
-  { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/modern-template/200/280' },
-  { id: 'creative', name: 'Creative', imageUrl: 'https://picsum.photos/seed/creative-template/200/280' },
-  { id: 'tech', name: 'Tech', imageUrl: 'https://picsum.photos/seed/tech-template/200/280' },
-  { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://picsum.photos/seed/minimalist-template/200/280' },
+  { id: 'classic', name: 'Classic', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/generative-ai/assets/resume-builder/classic-template.png' },
+  { id: 'modern', name: 'Modern', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/generative-ai/assets/resume-builder/modern-template.png' },
+  { id: 'creative', name: 'Creative', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/generative-ai/assets/resume-builder/creative-template.png' },
+  { id: 'tech', name: 'Tech', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/generative-ai/assets/resume-builder/tech-template.png' },
+  { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/generative-ai/assets/resume-builder/minimalist-template.png' },
 ];
 
 export const THEMES: Theme[] = [
@@ -304,7 +295,5 @@ export const DEFAULT_FORMATTING: FormattingOptions = {
     lineHeight: 'md'
 };
 
-// For this client-side app, this simulates a pre-configured admin email address
 export const PRE_CONFIGURED_ADMIN_EMAIL = 'admin@resumegen.com';
-// This is the fallback password if one is not set in localStorage by the reset mechanism
 export const DEFAULT_ADMIN_PASSWORD = 'admin123';

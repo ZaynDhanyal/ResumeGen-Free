@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { ResumeData, KeywordAnalysis } from '../types';
 import { analyzeKeywords } from '../services/geminiService';

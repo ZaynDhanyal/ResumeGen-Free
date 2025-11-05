@@ -1,20 +1,17 @@
-
-
 import { GoogleGenAI, Type } from '@google/genai';
 import { Experience, Skill, KeywordAnalysis, ResumeData, AtsAnalysis } from '../types';
 
-let ai: GoogleGenAI | null = null;
-
+// Per coding guidelines, do not use a singleton instance of GoogleGenAI.
 function getAiClient(): GoogleGenAI {
-  if (!process.env.API_KEY) {
-    // This error will only be thrown when an AI function is called, not on app load.
+  // Per coding guidelines, API key must be from process.env.API_KEY
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    // Update error message to reflect correct env var.
     console.error("API_KEY environment variable not set. Gemini API calls will fail.");
     throw new Error("Gemini API key is not configured. Please set the API_KEY environment variable.");
   }
-  if (!ai) {
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  }
-  return ai;
+  // Per coding guidelines, create a new instance for each client request.
+  return new GoogleGenAI({ apiKey });
 }
 
 
@@ -142,7 +139,6 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
             },
         });
         
-        // The response text is a string that needs to be parsed into JSON.
         const jsonText = response.text.trim();
         return JSON.parse(jsonText) as KeywordAnalysis;
 

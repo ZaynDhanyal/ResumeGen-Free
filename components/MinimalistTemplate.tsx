@@ -1,5 +1,6 @@
 import React from 'react';
-import { TemplateProps } from './ResumePreview';
+// FIX: Changed import path for TemplateProps from './ResumePreview' to '../types'
+import { TemplateProps } from '../types';
 import { SAMPLE_RESUME, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 
 const MinimalistTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
@@ -91,7 +92,7 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, 
             <Section title="Skills">
                 <div className="flex flex-wrap gap-2">
                     {skillsToRender.map(skill => (
-                        <span key={skill.id} className="text-sm px-4 py-1.5 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>
+                        <span key={skill.id} className="inline-flex items-center text-sm px-4 py-1.5 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>
                             {skill.name}
                         </span>
                     ))}

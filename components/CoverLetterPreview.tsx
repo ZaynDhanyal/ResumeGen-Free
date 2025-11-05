@@ -20,11 +20,11 @@ const CoverLetterPreview: React.FC<CoverLetterPreviewProps> = ({ coverLetterData
   const getDynamicStyles = (text: string) => {
     const length = text.length;
     if (length > 1500) {
-      return 'text-xs leading-snug'; // Smaller font, tighter leading for very long text
-    } else if (length > 800) { // Adjusted threshold for better readability
-      return 'text-sm leading-normal'; // Medium font size and leading
+      return 'text-xs leading-snug';
+    } else if (length > 800) {
+      return 'text-sm leading-normal';
     }
-    return 'text-base leading-relaxed'; // Default for shorter letters
+    return 'text-base leading-relaxed';
   };
 
   const dynamicTextStyles = getDynamicStyles(contentBody);

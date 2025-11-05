@@ -8,11 +8,9 @@ interface ImageCropperModalProps {
   onCropComplete: (croppedImageUrl: string) => void;
 }
 
-// This is a helper function to create a data URL from canvas.
 function canvasToDataURL(canvas: HTMLCanvasElement, mimeType = 'image/png', quality = 0.92) {
   return canvas.toDataURL(mimeType, quality);
 }
-
 
 const ImageCropperModal: React.FC<ImageCropperModalProps> = ({ imageSrc, onClose, onCropComplete }) => {
   const imgRef = useRef<HTMLImageElement>(null);

@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { LogoIcon, MenuIcon, CloseIcon, SunIcon, MoonIcon } from './icons';
 import { ThemeMode } from '../types';
 
@@ -12,9 +11,9 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const location = useLocation();
+  const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
 
-  const searchParams = new URLSearchParams(location.search);
   const isAdminVisible = searchParams.get('admin') === 'true';
 
   const toggleTheme = () => {
@@ -34,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
   }, []);
 
   const navLinkClasses = (path: string, isMobile: boolean = false) => {
-    const isActive = location.pathname.startsWith(path);
+    const isActive = pathname.startsWith(path);
     if (isMobile) {
       return `block w-full text-left px-4 py-3 rounded-md text-lg font-medium transition-colors ${
         isActive

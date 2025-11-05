@@ -1,119 +1,68 @@
+'use client';
 
-
-import React, { useState, useCallback, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner, ThemeMode, FontFamily } from './types';
-import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS, THEMES, FONT_OPTIONS } from './constants';
-import Header from './components/Header';
-import ResumeEditor from './components/ResumeEditor';
-import ResumePreview from './components/ResumePreview';
-import CoverLetterEditor from './components/CoverLetterEditor';
-import CoverLetterPreview from './components/CoverLetterPreview';
-import Blog from './components/Blog';
-import Footer from './components/Footer';
-import AdminPanel from './components/AdminPanel';
+import React, { useState, useCallback, useEffect, createContext, useContext, ReactNode, Suspense } from 'react';
+import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner, ThemeMode } from '@/types';
+import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS, THEMES } from '@/constants';
+import Header from './Header';
+import Footer from './Footer';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { usePathname } from 'next/navigation';
 
-interface ResumeViewWrapperProps {
+interface AppContextType {
   resumeData: ResumeData;
-  onDataChange: <T>(section: keyof ResumeData, data: T, index?: number) => void;
-  onAddItem: (section: keyof ResumeData, item: any) => void;
-  onRemoveItem: (section: keyof ResumeData, index: number) => void;
+  handleDataChange: <T>(section: keyof ResumeData, data: T, index?: number) => void;
+  handleAddItem: (section: keyof ResumeData, item: any) => void;
+  handleRemoveItem: (section: keyof ResumeData, index: number) => void;
+  handleClearAllResume: () => void;
+  handleClearResumeSection: (section: keyof ResumeData) => void;
+  coverLetterData: CoverLetterData;
+  handleCoverLetterDataChange: (field: keyof CoverLetterData, value: string) => void;
+  handleClearCoverLetterSection: (section: 'recipient' | 'body') => void;
   templateId: TemplateId;
   setTemplateId: (id: TemplateId) => void;
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
-  onDownloadPdf: () => void;
   formattingOptions: FormattingOptions;
   setFormattingOptions: (options: FormattingOptions) => void;
-  onClearAll: () => void;
-  onClearSection: (section: keyof ResumeData) => void;
   theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
+  blogPosts: BlogPost[];
+  setBlogPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>;
   affiliateBanners: AffiliateBanner[];
+  setAffiliateBanners: React.Dispatch<React.SetStateAction<AffiliateBanner[]>>;
+  handleDownloadPdf: () => void;
+  handleCoverLetterDownloadPdf: () => void;
 }
 
-const ResumeViewWrapper: React.FC<ResumeViewWrapperProps> = (props) => {
-  const location = useLocation();
-  const isPreview = location.pathname.endsWith('/preview');
-  return (
-    <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div className={!isPreview ? 'block' : 'hidden lg:block'}>
-        <ResumeEditor {...props} />
-      </div>
-      <div className={`lg:sticky top-20 self-start ${isPreview ? 'block' : 'hidden lg:block'}`}>
-        <ResumePreview 
-          resumeData={props.resumeData} 
-          templateId={props.templateId} 
-          themeId={props.themeId} 
-          formattingOptions={props.formattingOptions} 
-          themeMode={props.theme}
-        />
-      </div>
-    </div>
-  );
+const AppContext = createContext<AppContextType | null>(null);
+
+export const useApp = () => {
+    const context = useContext(AppContext);
+    if (!context) {
+        throw new Error('useApp must be used within an AppProvider');
+    }
+    return context;
 };
 
-interface CoverLetterViewWrapperProps {
-  coverLetterData: CoverLetterData;
-  resumeData: ResumeData;
-  onDataChange: (field: keyof CoverLetterData, value: string) => void;
-  onDownloadPdf: () => void;
-  themeId: ThemeId;
-  setThemeId: (id: ThemeId) => void;
-  onClearSection: (section: 'recipient' | 'body') => void;
-  theme: ThemeMode;
-  affiliateBanners: AffiliateBanner[];
-}
-
-const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) => {
-    const location = useLocation();
-    const isPreview = location.pathname.endsWith('/preview');
-    return (
-      <div className="flex-grow container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className={!isPreview ? 'block' : 'hidden lg:block'}>
-          <CoverLetterEditor {...props} />
-        </div>
-        <div className={`lg:sticky top-20 self-start ${isPreview ? 'block' : 'hidden lg:block'}`}>
-          <CoverLetterPreview 
-            coverLetterData={props.coverLetterData} 
-            themeId={props.themeId}
-            themeMode={props.theme}
-          />
-        </div>
-      </div>
-    );
-}
-
-const App: React.FC = () => {
-  const [resumeData, setResumeData] = useState<ResumeData>(() => {
-    try {
-      const saved = localStorage.getItem('autosavedResumeData');
-      return saved ? JSON.parse(saved) : EMPTY_RESUME;
-    } catch {
-      return EMPTY_RESUME;
-    }
-  });
-  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>(() => {
-    try {
-      const saved = localStorage.getItem('autosavedCoverLetterData');
-      return saved ? JSON.parse(saved) : EMPTY_COVER_LETTER;
-    } catch {
-      return EMPTY_COVER_LETTER;
-    }
-  });
+export default function AppProvider({ children }: { children: ReactNode }) {
+  const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
+  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>(EMPTY_COVER_LETTER);
   const [templateId, setTemplateId] = useState<TemplateId>('classic');
   const [themeId, setThemeId] = useState<ThemeId>('default');
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
 
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedTheme = window.localStorage.getItem('theme') as ThemeMode;
-      if (storedTheme) return storedTheme;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const [theme, setTheme] = useState<ThemeMode>('light');
+
+  useEffect(() => {
+    // Set initial theme based on localStorage/system preference
+    const storedTheme = window.localStorage.getItem('theme') as ThemeMode;
+    if (storedTheme) {
+        setTheme(storedTheme);
+    } else {
+        setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     }
-    return 'light';
-  });
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -122,7 +71,36 @@ const App: React.FC = () => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Autosave resume and cover letter data
+
+  // Dynamic content state
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [affiliateBanners, setAffiliateBanners] = useState<AffiliateBanner[]>([]);
+  
+  useEffect(() => {
+    try {
+      const savedPosts = localStorage.getItem('blogPosts');
+      setBlogPosts(savedPosts ? JSON.parse(savedPosts) : DEFAULT_BLOG_POSTS);
+
+      const savedBanners = localStorage.getItem('affiliateBanners');
+      setAffiliateBanners(savedBanners ? JSON.parse(savedBanners) : DEFAULT_AFFILIATE_BANNERS);
+      
+      const savedResume = localStorage.getItem('autosavedResumeData');
+      if (savedResume) {
+        setResumeData(JSON.parse(savedResume));
+      }
+
+      const savedCoverLetter = localStorage.getItem('autosavedCoverLetterData');
+      if (savedCoverLetter) {
+        setCoverLetterData(JSON.parse(savedCoverLetter));
+      }
+    } catch (error) {
+      console.error("Failed to load data from localStorage", error);
+      setBlogPosts(DEFAULT_BLOG_POSTS);
+      setAffiliateBanners(DEFAULT_AFFILIATE_BANNERS);
+    }
+  }, []);
+
+  // Persist resume and cover letter with autosave
   useEffect(() => {
     const handler = setTimeout(() => {
       try {
@@ -130,8 +108,7 @@ const App: React.FC = () => {
       } catch (error) {
         console.error("Could not save resume data to localStorage", error);
       }
-    }, 1000); // Autosave 1 second after last change
-
+    }, 1000);
     return () => clearTimeout(handler);
   }, [resumeData]);
 
@@ -142,30 +119,9 @@ const App: React.FC = () => {
       } catch (error) {
         console.error("Could not save cover letter data to localStorage", error);
       }
-    }, 1000); // Autosave 1 second after last change
-
+    }, 1000);
     return () => clearTimeout(handler);
   }, [coverLetterData]);
-
-
-  // Dynamic content state
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
-    try {
-      const saved = localStorage.getItem('blogPosts');
-      return saved ? JSON.parse(saved) : DEFAULT_BLOG_POSTS;
-    } catch {
-      return DEFAULT_BLOG_POSTS;
-    }
-  });
-
-  const [affiliateBanners, setAffiliateBanners] = useState<AffiliateBanner[]>(() => {
-    try {
-      const saved = localStorage.getItem('affiliateBanners');
-      return saved ? JSON.parse(saved) : DEFAULT_AFFILIATE_BANNERS;
-    } catch {
-      return DEFAULT_AFFILIATE_BANNERS;
-    }
-  });
 
   // Persist dynamic content to localStorage
   useEffect(() => {
@@ -176,6 +132,7 @@ const App: React.FC = () => {
     localStorage.setItem('affiliateBanners', JSON.stringify(affiliateBanners));
   }, [affiliateBanners]);
   
+  const pathname = usePathname();
   // Load shared resume from URL hash
   useEffect(() => {
     const hash = window.location.hash;
@@ -191,11 +148,10 @@ const App: React.FC = () => {
         } catch (error) {
             console.error("Failed to load shared resume from URL:", error);
         } finally {
-            // Use router-friendly way to clear hash, or let it be if it doesn't interfere
-            window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+            window.history.replaceState(null, document.title, pathname);
         }
     }
-  }, []);
+  }, [pathname]);
 
   // Sync senderName with resume fullName
   useEffect(() => {
@@ -324,10 +280,7 @@ const App: React.FC = () => {
         });
 
         const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
-        const currentColors = (isDarkMode && selectedTheme.dark) ? selectedTheme.dark : selectedTheme.colors;
-        const pageFillColor = elementId === 'cover-letter-preview'
-            ? currentColors.secondary
-            : currentColors.background;
+        const pageFillColor = selectedTheme.colors.secondary;
         
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -391,56 +344,41 @@ const App: React.FC = () => {
     downloadPdf('cover-letter-preview', filename);
   }, [coverLetterData.senderName, downloadPdf]);
   
-  return (
-    <div className="min-h-screen flex flex-col font-sans text-gray-800 dark:text-gray-200">
-      <Header theme={theme} setTheme={setTheme} />
-      <main className="flex-grow w-full">
-        <Routes>
-          <Route path="/" element={<Navigate to="/resume" replace />} />
-          <Route path="/resume/*" element={
-            <ResumeViewWrapper 
-                resumeData={resumeData} 
-                onDataChange={handleDataChange}
-                onAddItem={handleAddItem}
-                onRemoveItem={handleRemoveItem}
-                templateId={templateId}
-                setTemplateId={setTemplateId}
-                themeId={themeId}
-                setThemeId={setThemeId}
-                onDownloadPdf={handleDownloadPdf}
-                formattingOptions={formattingOptions}
-                setFormattingOptions={setFormattingOptions}
-                onClearAll={handleClearAllResume}
-                onClearSection={handleClearResumeSection}
-                theme={theme}
-                affiliateBanners={affiliateBanners}
-            />
-          } />
-          <Route path="/cover-letter/*" element={
-            <CoverLetterViewWrapper
-                coverLetterData={coverLetterData} 
-                resumeData={resumeData}
-                onDataChange={handleCoverLetterDataChange}
-                onDownloadPdf={handleCoverLetterDownloadPdf}
-                themeId={themeId}
-                setThemeId={setThemeId}
-                onClearSection={handleClearCoverLetterSection}
-                theme={theme}
-                affiliateBanners={affiliateBanners}
-            />
-          } />
-          <Route path="/blog" element={<Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />} />
-          <Route path="/admin" element={<AdminPanel
-              blogPosts={blogPosts}
-              setBlogPosts={setBlogPosts}
-              affiliateBanners={affiliateBanners}
-              setAffiliateBanners={setAffiliateBanners}
-            />} />
-        </Routes>
-      </main>
-      <Footer affiliateBanners={affiliateBanners} />
-    </div>
-  );
-};
+  const contextValue: AppContextType = {
+    resumeData,
+    handleDataChange,
+    handleAddItem,
+    handleRemoveItem,
+    handleClearAllResume,
+    handleClearResumeSection,
+    coverLetterData,
+    handleCoverLetterDataChange,
+    handleClearCoverLetterSection,
+    templateId,
+    setTemplateId,
+    themeId,
+    setThemeId,
+    formattingOptions,
+    setFormattingOptions,
+    theme,
+    setTheme,
+    blogPosts,
+    setBlogPosts,
+    affiliateBanners,
+    setAffiliateBanners,
+    handleDownloadPdf,
+    handleCoverLetterDownloadPdf,
+  };
 
-export default App;
+  return (
+    <AppContext.Provider value={contextValue}>
+        <div className="min-h-screen flex flex-col font-sans text-gray-800 dark:text-gray-200">
+            <Suspense fallback={<div className="h-16"></div>}>
+              <Header theme={theme} setTheme={setTheme} />
+            </Suspense>
+            <main className="flex-grow w-full">{children}</main>
+            <Footer affiliateBanners={affiliateBanners} />
+        </div>
+    </AppContext.Provider>
+  );
+}

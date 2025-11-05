@@ -1,5 +1,6 @@
 import React from 'react';
-import { TemplateProps } from './ResumePreview';
+// FIX: Changed import path for TemplateProps from './ResumePreview' to '../types'
+import { TemplateProps } from '../types';
 import { SAMPLE_RESUME, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 
 const skillLevelToPercentage = (level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert') => {

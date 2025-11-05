@@ -1,7 +1,3 @@
-
-
-
-
 export type ThemeMode = 'light' | 'dark';
 
 export interface PersonalInfo {
@@ -27,7 +23,7 @@ export interface Experience {
 }
 
 export interface Education {
-  id: string;
+  id:string;
   degree: string;
   institution: string;
   location: string;
@@ -120,4 +116,11 @@ export interface AffiliateBanner {
     url: string;
     imageUrl: string;
     description: string;
+}
+
+export interface TemplateProps {
+    data: ResumeData;
+    theme: Theme;
+    formatting: FormattingOptions;
+    themeMode: ThemeMode;
 }

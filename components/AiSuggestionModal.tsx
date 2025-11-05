@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { generateBulletPoints, generateSummary, generateCoverLetter } from '../services/geminiService';
 import { MagicIcon, CloseIcon } from './icons';
@@ -29,7 +28,7 @@ const AiSuggestionModal: React.FC<AiSuggestionModalProps> = ({ type, context, on
       }
       setSuggestion(result);
     } catch (err) {
-      setError('Failed to get AI suggestion. Please try again.');
+      setError('Failed to get AI suggestion. Please check your API key and try again.');
       console.error(err);
     } finally {
       setIsLoading(false);
