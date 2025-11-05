@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ResumeData, TemplateId, ThemeId, FormattingOptions, ThemeMode, TemplateProps } from '../types';
 import { THEMES } from '../constants';
 import { PencilIcon } from './icons';
@@ -39,7 +39,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, t
     <div className="relative">
         <div className="lg:hidden absolute top-4 right-4 z-10">
             <Link
-                to="/resume"
+                href="/resume"
                 className="flex items-center px-4 py-2 bg-gray-700/80 dark:bg-gray-900/80 backdrop-blur-sm text-white font-bold rounded-full shadow-lg hover:bg-gray-800 dark:hover:bg-gray-900 transition-colors"
             >
                 <PencilIcon className="h-5 w-5 mr-2" />

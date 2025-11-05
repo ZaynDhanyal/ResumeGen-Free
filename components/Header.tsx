@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+'use client';
+
+import React, { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { LogoIcon, MenuIcon, CloseIcon, SunIcon, MoonIcon } from './icons';
 import { ThemeMode } from '../types';
 
@@ -8,14 +11,38 @@ interface HeaderProps {
   setTheme: (theme: ThemeMode) => void;
 }
 
+// New component to safely access search params
+const AdminLink: React.FC<{
+  navLinkClasses: (path: string, isMobile?: boolean) => string;
+  handleNavClick?: () => void;
+  isMobile?: boolean;
+}> = ({ navLinkClasses, handleNavClick, isMobile = false }) => {
+  const searchParams = useSearchParams();
+  const isAdminVisible = searchParams ? searchParams.get('admin') === 'true' : false;
+
+  if (!isAdminVisible) {
+    return null;
+  }
+
+  if (isMobile) {
+    return (
+      <Link href="/admin" onClick={handleNavClick} className={navLinkClasses('/admin', true)}>
+        Admin
+      </Link>
+    );
+  }
+
+  return (
+    <Link href="/admin" className={navLinkClasses('/admin')}>
+      Admin
+    </Link>
+  );
+};
+
 const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const location = useLocation();
-  const pathname = location.pathname;
-  const searchParams = new URLSearchParams(location.search);
-
-  const isAdminVisible = searchParams.get('admin') === 'true';
+  const pathname = usePathname();
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -34,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
   }, []);
 
   const navLinkClasses = (path: string, isMobile: boolean = false) => {
-    const isActive = pathname.startsWith(path);
+    const isActive = pathname ? pathname.startsWith(path) : false;
     if (isMobile) {
       return `block w-full text-left px-4 py-3 rounded-md text-lg font-medium transition-colors ${
         isActive
@@ -59,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
       <header className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm transition-all duration-300 ${isSticky ? 'shadow-md dark:shadow-gray-800 sticky top-0 z-50' : 'shadow-sm dark:shadow-none'}`}>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <Link to="/resume" className="flex-shrink-0 flex items-center">
+            <Link href="/resume" className="flex-shrink-0 flex items-center">
               <LogoIcon className="h-8 w-8 text-blue-600" />
               <span className="ml-2 text-xl font-bold text-gray-800 dark:text-white">ResumeGen Free</span>
             </Link>
@@ -67,20 +94,18 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
             <div className="flex items-center">
               {/* Desktop Nav */}
               <nav className="hidden sm:flex sm:space-x-4">
-                <Link to="/resume" className={navLinkClasses('/resume')}>
+                <Link href="/resume" className={navLinkClasses('/resume')}>
                   Resume
                 </Link>
-                <Link to="/cover-letter" className={navLinkClasses('/cover-letter')}>
+                <Link href="/cover-letter" className={navLinkClasses('/cover-letter')}>
                   Cover Letter
                 </Link>
-                <Link to="/blog" className={navLinkClasses('/blog')}>
+                <Link href="/blog" className={navLinkClasses('/blog')}>
                   Blog
                 </Link>
-                {isAdminVisible && (
-                  <Link to="/admin" className={navLinkClasses('/admin')}>
-                    Admin
-                  </Link>
-                )}
+                <Suspense fallback={null}>
+                  <AdminLink navLinkClasses={navLinkClasses} />
+                </Suspense>
               </nav>
 
               <button
@@ -121,7 +146,7 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
       >
         <div className="p-4">
           <div className="flex justify-between items-center mb-6">
-            <Link to="/resume" onClick={handleNavClick} className="flex items-center">
+            <Link href="/resume" onClick={handleNavClick} className="flex items-center">
                 <LogoIcon className="h-8 w-8 text-blue-600" />
                 <span className="ml-2 text-xl font-bold text-gray-800 dark:text-white">ResumeGen</span>
             </Link>
@@ -130,20 +155,18 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
             </button>
           </div>
           <nav className="flex flex-col space-y-2">
-            <Link to="/resume" onClick={handleNavClick} className={navLinkClasses('/resume', true)}>
+            <Link href="/resume" onClick={handleNavClick} className={navLinkClasses('/resume', true)}>
               Resume
             </Link>
-            <Link to="/cover-letter" onClick={handleNavClick} className={navLinkClasses('/cover-letter', true)}>
+            <Link href="/cover-letter" onClick={handleNavClick} className={navLinkClasses('/cover-letter', true)}>
               Cover Letter
             </Link>
-            <Link to="/blog" onClick={handleNavClick} className={navLinkClasses('/blog', true)}>
+            <Link href="/blog" onClick={handleNavClick} className={navLinkClasses('/blog', true)}>
               Blog
             </Link>
-            {isAdminVisible && (
-              <Link to="/admin" onClick={handleNavClick} className={navLinkClasses('/admin', true)}>
-                Admin
-              </Link>
-            )}
+            <Suspense fallback={null}>
+              <AdminLink navLinkClasses={navLinkClasses} handleNavClick={handleNavClick} isMobile={true} />
+            </Suspense>
           </nav>
         </div>
       </div>
