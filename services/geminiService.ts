@@ -2,12 +2,27 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { Experience, Skill, KeywordAnalysis, ResumeData } from '../types';
 
-if (!process.env.API_KEY) {
-  // This is a placeholder check. The environment variable is expected to be set.
-  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
+// Lazy-initialized instance
+let ai: GoogleGenAI | null = null;
+
+/**
+ * Initializes and returns the GoogleGenAI instance.
+ * This function ensures the instance is created only when needed,
+ * preventing potential startup errors if environment variables are not immediately available.
+ */
+function getAiInstance(): GoogleGenAI {
+  if (!ai) {
+    if (!process.env.API_KEY) {
+      // This is a placeholder check. The environment variable is expected to be set.
+      console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
+    }
+    // The API key is expected to be provided by the environment.
+    // The non-null assertion (!) is used based on this assumption.
+    ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+  }
+  return ai;
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 export async function generateSummary(jobTitle: string, experience: Experience[], skills: Skill[]): Promise<string> {
   const skillsList = skills.map(s => s.name).join(', ');
@@ -22,7 +37,8 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const aiInstance = getAiInstance();
+    const response = await aiInstance.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
     });
@@ -44,7 +60,8 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
     `;
     
     try {
-        const response = await ai.models.generateContent({
+        const aiInstance = getAiInstance();
+        const response = await aiInstance.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
         });
@@ -77,7 +94,8 @@ export async function generateCoverLetter(resumeData: ResumeData, recipientName:
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const aiInstance = getAiInstance();
+    const response = await aiInstance.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
@@ -108,7 +126,8 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const aiInstance = getAiInstance();
+        const response = await aiInstance.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
