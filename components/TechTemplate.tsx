@@ -1,15 +1,20 @@
 import React from 'react';
-import { TemplateProps } from '../types';
+import { TemplateProps } from './ResumePreview';
 import { SAMPLE_RESUME, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 
-const skillLevelToDots = (level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert') => {
-    const levels = { 'Beginner': 1, 'Intermediate': 2, 'Advanced': 3, 'Expert': 4 };
-    return levels[level] || 0;
+const skillLevelToPercentage = (level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert') => {
+    switch (level) {
+        case 'Beginner': return '25%';
+        case 'Intermediate': return '50%';
+        case 'Advanced': return '75%';
+        case 'Expert': return '100%';
+        default: return '0%';
+    }
 };
 
-const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeMode }) => {
+const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
     const { personalInfo, summary, experience, education, skills, customDetails } = data;
-    const colors = (themeMode === 'dark' && theme.dark) ? theme.dark : theme.colors;
+    const { colors } = theme;
     const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-sans';
     const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
 
@@ -18,68 +23,76 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeM
     const skillsToRender = skills.length > 0 ? skills : SAMPLE_RESUME.skills;
     const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
     
-    const Section: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
-        <section className={`mb-6 ${className}`}>
-            <h2 className="text-lg font-bold uppercase tracking-wider pb-1 mb-3 text-left" style={{ color: colors.primary }}>
-                {title}
-            </h2>
-            {children}
-        </section>
-    );
-
     return (
-        <div className={`grid grid-cols-12 gap-0 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
-            <aside className="col-span-12 md:col-span-4 p-10" style={{ backgroundColor: colors.secondary }}>
-                <header className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
+        <div className={`grid grid-cols-1 md:grid-cols-12 gap-0 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
+            <aside className="col-span-12 md:col-span-4 p-4 sm:p-8" style={{ backgroundColor: colors.secondary }}>
+                <header className="mb-8">
+                    <h1 className="text-3xl font-bold" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
                     <p className="text-lg" style={{ color: colors.text, opacity: 0.9 }}>{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
                 </header>
                 
-                <Section title="Contact">
-                    <div className="space-y-1 text-xs">
-                        <p className="break-all">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
-                        <p>{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
-                        <p>{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
-                        <p className="break-all">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
-                        <p className="break-all">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
-                    </div>
-                </Section>
+                <section className="mb-6">
+                    <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Contact</h2>
+                    <p className="text-xs mb-1 break-all">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
+                    <p className="text-xs mb-1">{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
+                    <p className="text-xs mb-1">{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
+                    <p className="text-xs mb-1">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
+                    <p className="text-xs mb-1">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
+                </section>
+
+                {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
+                     <section className="mb-6">
+                        <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Details</h2>
+                        <div className="space-y-2">
+                            {personalInfo.nationality && (
+                                <div>
+                                    <p className="text-xs font-bold">Nationality</p>
+                                    <p className="text-xs">{personalInfo.nationality}</p>
+                                </div>
+                            )}
+                            {customDetailsToRender.map(detail => (
+                                <div key={detail.id}>
+                                    <p className="text-xs font-bold">{detail.label}</p>
+                                    <p className="text-xs">{detail.value}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
                 
-                <Section title="Skills">
-                    <div className="space-y-3">
+                <section className="mb-6">
+                    <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Skills</h2>
+                    <div className="space-y-2">
                         {skillsToRender.map(skill => (
                             <div key={skill.id}>
-                                <p className="text-xs font-semibold mb-1">{skill.name}</p>
-                                <div className="flex space-x-1">
-                                    {Array.from({ length: 4 }).map((_, i) => (
-                                        <span
-                                            key={i}
-                                            className="h-2 w-full rounded-full"
-                                            style={{ backgroundColor: i < skillLevelToDots(skill.level) ? colors.primary : '#d1d5db' }}
-                                        ></span>
-                                    ))}
+                                <p className="text-xs font-semibold">{skill.name}</p>
+                                <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">
+                                    <div className="h-1.5 rounded-full" style={{ width: skillLevelToPercentage(skill.level), backgroundColor: colors.primary }}></div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </Section>
-
-                <Section title="Education">
+                </section>
+                
+                <section>
+                    <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Education</h2>
                     {educationToRender.map(edu => (
-                        <div key={edu.id} className="mb-3 text-sm">
-                            <h3 className="font-bold">{edu.degree}</h3>
+                        <div key={edu.id} className="mb-3">
+                            <h3 className="font-bold text-xs">{edu.degree}</h3>
                             <p className="text-xs italic">{edu.institution}</p>
                             <p className="text-xs" style={{ opacity: 0.8 }}>{edu.startDate} - {edu.endDate}</p>
                         </div>
                     ))}
-                </Section>
+                </section>
             </aside>
-            <main className="col-span-12 md:col-span-8 p-10">
-                <Section title="Summary">
+            <main className="col-span-12 md:col-span-8 p-4 sm:p-8">
+                <section className="mb-6">
+                    <h2 className="text-xl font-bold uppercase tracking-wider border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Summary</h2>
                     <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>
-                </Section>
+                </section>
                 
-                <Section title="Experience">
+                <section>
+                    <h2 className="text-xl font-bold uppercase tracking-wider border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Experience</h2>
                     {experiencesToRender.map(exp => (
                         <div key={exp.id} className="mb-4">
                             <div className="flex justify-between items-baseline">
@@ -92,7 +105,7 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting, themeM
                             </ul>
                         </div>
                     ))}
-                </Section>
+                </section>
             </main>
         </div>
     );

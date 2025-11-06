@@ -1,20 +1,5 @@
 import { ResumeData, CoverLetterData, TemplateId, Theme, FontFamily, LineHeight, FormattingOptions, BlogPost, AffiliateBanner } from './types';
 
-const formatDate = (): string => {
-  try {
-    return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  } catch (e) {
-    console.warn("Date formatting with Intl failed, using fallback.", e);
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${month}/${day}/${year}`;
-  }
-};
-
-export const simpleUUID = (): string => `id-${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`;
-
 export const EMPTY_EXPERIENCE = {
   id: '',
   jobTitle: '',
@@ -69,10 +54,12 @@ export const EMPTY_RESUME: ResumeData = {
 export const EMPTY_COVER_LETTER: CoverLetterData = {
   recipientName: '',
   recipientCompany: '',
-  date: formatDate(),
+  // Fix: Corrected typo from toLocaleDateDateString to toLocaleDateString
+  date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
   body: '',
   senderName: '',
 };
+
 
 export const SAMPLE_RESUME: ResumeData = {
   personalInfo: {
@@ -136,13 +123,16 @@ export const SAMPLE_RESUME: ResumeData = {
     { id: 'skill6', name: 'A/B Testing', level: 'Advanced' },
     { id: 'skill7', name: 'SQL', level: 'Intermediate' },
   ],
-  customDetails: [],
+  customDetails: [
+    { id: 'cd1', label: 'Marital Status', value: 'Single' },
+  ],
 };
 
 export const SAMPLE_COVER_LETTER: CoverLetterData = {
   recipientName: 'Hiring Manager',
   recipientCompany: 'NextGen Corp',
-  date: formatDate(),
+  // Fix: Corrected typo from toLocaleDateDateString to toLocaleDateString
+  date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
   body: `Dear Hiring Manager,
 
 I am writing to express my enthusiastic interest in the Senior Product Manager position at NextGen Corp, which I discovered through LinkedIn. With my extensive experience in driving product strategy and leading high-performing teams in the tech industry, I am confident that I possess the skills and vision to contribute significantly to your company's success.
@@ -154,76 +144,65 @@ I am particularly impressed by NextGen Corp's work in [Mention a specific projec
 };
 
 export const TEMPLATES: { id: TemplateId; name: string; imageUrl: string }[] = [
-  { id: 'classic', name: 'Classic', imageUrl: 'https://picsum.photos/seed/classic-resume/400/518' },
-  { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/modern-resume/400/518' },
-  { id: 'creative', name: 'Creative', imageUrl: 'https://picsum.photos/seed/creative-resume/400/518' },
-  { id: 'tech', name: 'Tech', imageUrl: 'https://picsum.photos/seed/tech-resume/400/518' },
-  { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://picsum.photos/seed/minimalist-resume/400/518' },
-  { id: 'corporate', name: 'Corporate', imageUrl: 'https://picsum.photos/seed/corporate-resume/400/518' },
-  { id: 'elegant', name: 'Elegant', imageUrl: 'https://picsum.photos/seed/elegant-resume/400/518' },
-  { id: 'infographic', name: 'Infographic', imageUrl: 'https://picsum.photos/seed/infographic-resume/400/518' },
+  { id: 'classic', name: 'Classic', imageUrl: 'https://picsum.photos/seed/classic-template/200/280' },
+  { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/modern-template/200/280' },
+  { id: 'creative', name: 'Creative', imageUrl: 'https://picsum.photos/seed/creative-template/200/280' },
+  { id: 'tech', name: 'Tech', imageUrl: 'https://picsum.photos/seed/tech-template/200/280' },
+  { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://picsum.photos/seed/minimalist-template/200/280' },
+  { id: 'elegant', name: 'Elegant', imageUrl: 'https://picsum.photos/seed/elegant-template/200/280' },
+  { id: 'infographic', name: 'Infographic', imageUrl: 'https://picsum.photos/seed/infographic-template/200/280' },
 ];
 
 export const THEMES: Theme[] = [
     {
         id: 'default',
         name: 'Default',
-        colors: { primary: '#2563EB', secondary: '#DBEAFE', background: '#FFFFFF', text: '#1F2937' },
-        dark: { primary: '#3B82F6', secondary: '#1E3A8A', background: '#111827', text: '#F9FAFB' }
+        colors: { primary: '#2563EB', secondary: '#DBEAFE', background: '#FFFFFF', text: '#1F2937' }
     },
     {
         id: 'forest',
         name: 'Forest',
-        colors: { primary: '#166534', secondary: '#D1FAE5', background: '#FFFFFF', text: '#1F2937' },
-        dark: { primary: '#22C55E', secondary: '#14532D', background: '#111827', text: '#F9FAFB' }
+        colors: { primary: '#166534', secondary: '#D1FAE5', background: '#FFFFFF', text: '#1F2937' }
     },
     {
         id: 'ruby',
         name: 'Ruby',
-        colors: { primary: '#BE123C', secondary: '#FEE2E2', background: '#FFFFFF', text: '#1F2937' },
-        dark: { primary: '#F43F5E', secondary: '#881337', background: '#111827', text: '#F9FAFB' }
+        colors: { primary: '#BE123C', secondary: '#FEE2E2', background: '#FFFFFF', text: '#1F2937' }
     },
     {
         id: 'slate',
         name: 'Slate',
-        colors: { primary: '#475569', secondary: '#E2E8F0', background: '#FFFFFF', text: '#1F2937' },
-        dark: { primary: '#64748B', secondary: '#334155', background: '#111827', text: '#F9FAFB' }
+        colors: { primary: '#475569', secondary: '#E2E8F0', background: '#FFFFFF', text: '#1F2937' }
     },
     {
         id: 'plum',
         name: 'Plum',
-        colors: { primary: '#7E22CE', secondary: '#F3E8FF', background: '#FFFFFF', text: '#1F2937' },
-        dark: { primary: '#A855F7', secondary: '#581C87', background: '#111827', text: '#F9FAFB' }
+        colors: { primary: '#7E22CE', secondary: '#F3E8FF', background: '#FFFFFF', text: '#1F2937' }
     },
     {
         id: 'sunset',
         name: 'Sunset',
-        colors: { primary: '#FF6B6B', secondary: '#FFE6E6', background: '#FFFFFF', text: '#4A4A4A' },
-        dark: { primary: '#FF8787', secondary: '#5A2A2A', background: '#2C2525', text: '#FDECEC' }
+        colors: { primary: '#FF6B6B', secondary: '#FFE6E6', background: '#FFFFFF', text: '#4A4A4A' }
     },
     {
         id: 'ocean',
         name: 'Ocean',
-        colors: { primary: '#0096C7', secondary: '#ADE8F4', background: '#FFFFFF', text: '#023047' },
-        dark: { primary: '#48B5D9', secondary: '#023E7D', background: '#001219', text: '#E0FBFC' }
+        colors: { primary: '#0096C7', secondary: '#ADE8F4', background: '#FFFFFF', text: '#023047' }
     },
     {
         id: 'mint',
         name: 'Mint',
-        colors: { primary: '#40916C', secondary: '#D8F3DC', background: '#FFFFFF', text: '#1B4332' },
-        dark: { primary: '#52B788', secondary: '#1B4332', background: '#081C15', text: '#D8F3DC' }
+        colors: { primary: '#40916C', secondary: '#D8F3DC', background: '#FFFFFF', text: '#1B4332' }
     },
     {
         id: 'mustard',
         name: 'Mustard',
-        colors: { primary: '#E7AB79', secondary: '#FFF4E0', background: '#FFFFFF', text: '#544C4A' },
-        dark: { primary: '#FFC999', secondary: '#5D412C', background: '#2C2520', text: '#FFF4E0' }
+        colors: { primary: '#E7AB79', secondary: '#FFF4E0', background: '#FFFFFF', text: '#544C4A' }
     },
     {
         id: 'charcoal',
         name: 'Charcoal',
-        colors: { primary: '#6C757D', secondary: '#F8F9FA', background: '#FFFFFF', text: '#212529' },
-        dark: { primary: '#ADB5BD', secondary: '#343A40', background: '#212529', text: '#F8F9FA' }
+        colors: { primary: '#6C757D', secondary: '#F8F9FA', background: '#FFFFFF', text: '#212529' }
     }
 ];
 
@@ -298,5 +277,7 @@ export const DEFAULT_FORMATTING: FormattingOptions = {
     lineHeight: 'md'
 };
 
+// For this client-side app, this simulates a pre-configured admin email address
 export const PRE_CONFIGURED_ADMIN_EMAIL = 'admin@resumegen.com';
+// This is the fallback password if one is not set in localStorage by the reset mechanism
 export const DEFAULT_ADMIN_PASSWORD = 'admin123';

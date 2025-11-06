@@ -1,4 +1,5 @@
-export type ThemeMode = 'light' | 'dark';
+
+
 
 export interface PersonalInfo {
   fullName: string;
@@ -23,7 +24,7 @@ export interface Experience {
 }
 
 export interface Education {
-  id:string;
+  id: string;
   degree: string;
   institution: string;
   location: string;
@@ -61,17 +62,11 @@ export interface CoverLetterData {
   senderName: string;
 }
 
-export type TemplateId = 'classic' | 'modern' | 'creative' | 'tech' | 'minimalist' | 'corporate' | 'elegant' | 'infographic';
+export type TemplateId = 'classic' | 'modern' | 'creative' | 'tech' | 'minimalist' | 'elegant' | 'infographic';
 
 export interface KeywordAnalysis {
   missingKeywords: string[];
   presentKeywords: string[];
-}
-
-export interface AtsAnalysis {
-  score: 'Good' | 'Fair' | 'Needs Improvement';
-  passedChecks: string[];
-  suggestions: string[];
 }
 
 export type ThemeId = 'default' | 'forest' | 'ruby' | 'slate' | 'plum' | 'sunset' | 'ocean' | 'mint' | 'mustard' | 'charcoal';
@@ -80,12 +75,6 @@ export interface Theme {
     id: ThemeId;
     name: string;
     colors: {
-        primary: string;
-        secondary: string;
-        background: string;
-        text: string;
-    };
-    dark?: {
         primary: string;
         secondary: string;
         background: string;
@@ -116,11 +105,4 @@ export interface AffiliateBanner {
     url: string;
     imageUrl: string;
     description: string;
-}
-
-export interface TemplateProps {
-    data: ResumeData;
-    theme: Theme;
-    formatting: FormattingOptions;
-    themeMode: ThemeMode;
 }

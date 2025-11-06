@@ -1,9 +1,7 @@
-
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner, ThemeMode, FontFamily } from './types';
-import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS, THEMES, FONT_OPTIONS } from './constants';
+import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner } from './types';
+import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS } from './constants';
 import Header from './components/Header';
 import ResumeEditor from './components/ResumeEditor';
 import ResumePreview from './components/ResumePreview';
@@ -12,8 +10,10 @@ import CoverLetterPreview from './components/CoverLetterPreview';
 import Blog from './components/Blog';
 import Footer from './components/Footer';
 import AdminPanel from './components/AdminPanel';
+import AdModal from './components/AdModal';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// @ts-ignore
+import { jsPDF } from 'jspdf';
 
 interface ResumeViewWrapperProps {
   resumeData: ResumeData;
@@ -29,8 +29,6 @@ interface ResumeViewWrapperProps {
   setFormattingOptions: (options: FormattingOptions) => void;
   onClearAll: () => void;
   onClearSection: (section: keyof ResumeData) => void;
-  theme: ThemeMode;
-  affiliateBanners: AffiliateBanner[];
 }
 
 const ResumeViewWrapper: React.FC<ResumeViewWrapperProps> = (props) => {
@@ -47,7 +45,6 @@ const ResumeViewWrapper: React.FC<ResumeViewWrapperProps> = (props) => {
           templateId={props.templateId} 
           themeId={props.themeId} 
           formattingOptions={props.formattingOptions} 
-          themeMode={props.theme}
         />
       </div>
     </div>
@@ -62,8 +59,6 @@ interface CoverLetterViewWrapperProps {
   themeId: ThemeId;
   setThemeId: (id: ThemeId) => void;
   onClearSection: (section: 'recipient' | 'body') => void;
-  theme: ThemeMode;
-  affiliateBanners: AffiliateBanner[];
 }
 
 const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) => {
@@ -78,7 +73,6 @@ const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) =>
           <CoverLetterPreview 
             coverLetterData={props.coverLetterData} 
             themeId={props.themeId}
-            themeMode={props.theme}
           />
         </div>
       </div>
@@ -86,67 +80,13 @@ const CoverLetterViewWrapper: React.FC<CoverLetterViewWrapperProps> = (props) =>
 }
 
 const App: React.FC = () => {
-  const [resumeData, setResumeData] = useState<ResumeData>(() => {
-    try {
-      const saved = localStorage.getItem('autosavedResumeData');
-      return saved ? JSON.parse(saved) : EMPTY_RESUME;
-    } catch {
-      return EMPTY_RESUME;
-    }
-  });
-  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>(() => {
-    try {
-      const saved = localStorage.getItem('autosavedCoverLetterData');
-      return saved ? JSON.parse(saved) : EMPTY_COVER_LETTER;
-    } catch {
-      return EMPTY_COVER_LETTER;
-    }
-  });
+  const [resumeData, setResumeData] = useState<ResumeData>(EMPTY_RESUME);
+  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>(EMPTY_COVER_LETTER);
   const [templateId, setTemplateId] = useState<TemplateId>('classic');
   const [themeId, setThemeId] = useState<ThemeId>('default');
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
-
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedTheme = window.localStorage.getItem('theme') as ThemeMode;
-      if (storedTheme) return storedTheme;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'light';
-  });
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove(theme === 'dark' ? 'light' : 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  // Autosave resume and cover letter data
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      try {
-        localStorage.setItem('autosavedResumeData', JSON.stringify(resumeData));
-      } catch (error) {
-        console.error("Could not save resume data to localStorage", error);
-      }
-    }, 1000); // Autosave 1 second after last change
-
-    return () => clearTimeout(handler);
-  }, [resumeData]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      try {
-        localStorage.setItem('autosavedCoverLetterData', JSON.stringify(coverLetterData));
-      } catch (error) {
-        console.error("Could not save cover letter data to localStorage", error);
-      }
-    }, 1000); // Autosave 1 second after last change
-
-    return () => clearTimeout(handler);
-  }, [coverLetterData]);
-
+  const [isAdModalOpen, setIsAdModalOpen] = useState(false);
+  const [downloadType, setDownloadType] = useState<'resume' | 'cover-letter' | null>(null);
 
   // Dynamic content state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
@@ -182,7 +122,7 @@ const App: React.FC = () => {
     if (hash.startsWith('#share=')) {
         try {
             const base64String = hash.substring('#share='.length);
-            const jsonString = decodeURIComponent(window.atob(base64String));
+            const jsonString = decodeURIComponent(escape(window.atob(base64String)));
             const sharedResumeData: ResumeData = JSON.parse(jsonString);
 
             if (sharedResumeData && sharedResumeData.personalInfo) {
@@ -242,11 +182,6 @@ const App: React.FC = () => {
   const handleClearAllResume = useCallback(() => {
     if (window.confirm('Are you sure you want to clear the entire resume? This action cannot be undone.')) {
       setResumeData(EMPTY_RESUME);
-      try {
-        localStorage.removeItem('autosavedResumeData');
-      } catch (error) {
-        console.error("Could not remove autosaved resume data from localStorage", error);
-      }
     }
   }, []);
 
@@ -279,68 +214,46 @@ const App: React.FC = () => {
   }, []);
 
   const downloadPdf = useCallback((elementId: string, filename: string) => {
-    const sourceElement = document.getElementById(elementId);
-    if (!sourceElement) {
+    const element = document.getElementById(elementId);
+    if (!element) {
         console.error(`Element with id ${elementId} not found.`);
         return;
     }
 
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
-    }
+    html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null,
+    }).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'pt',
-      format: 'a4',
-    });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      
+      const ratio = canvasWidth / pdfWidth;
+      const totalImageHeight = canvasHeight / ratio;
 
-    const a4WidthPt = pdf.internal.pageSize.getWidth();
-    const margins = { top: 40, right: 40, bottom: 40, left: 40 };
-    
-    // The cloning approach is safer to avoid side-effects on the live view.
-    const elementToPrint = sourceElement.cloneNode(true) as HTMLElement;
-    const container = document.createElement('div');
-    // Position off-screen
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
-    container.style.top = '0px';
-    // Set width to match A4 paper for accurate layout rendering.
-    container.style.width = `${a4WidthPt}pt`;
-    container.appendChild(elementToPrint);
-    document.body.appendChild(container);
+      let position = 0;
 
-    pdf.html(elementToPrint, {
-      callback: (doc) => {
-        doc.save(filename);
-        // Cleanup
-        document.body.removeChild(container);
-        if (isDarkMode) {
-          document.documentElement.classList.add('dark');
-        }
-      },
-      autoPaging: 'text',
-      margin: [margins.top, margins.right, margins.bottom, margins.left],
-      // The content width in the PDF will be the page width minus horizontal margins.
-      width: a4WidthPt - margins.left - margins.right,
-      // The width of the browser window to simulate for rendering.
-      windowWidth: a4WidthPt,
-      html2canvas: {
-        scale: 2, // Higher scale for better image quality.
-        useCORS: true,
-        letterRendering: true,
-        // Capture full height of the element.
-        height: elementToPrint.scrollHeight,
-        windowHeight: elementToPrint.scrollHeight
-      },
-    }).catch((error) => {
-      console.error("PDF generation failed:", error);
-      // Cleanup on error
-      document.body.removeChild(container);
-      if (isDarkMode) {
-        document.documentElement.classList.add('dark');
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, Math.min(totalImageHeight, pdfHeight));
+      let heightLeft = totalImageHeight - pdfHeight;
+
+      while (heightLeft > 0) {
+        position -= pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight);
+        heightLeft -= pdfHeight;
       }
+      
+      pdf.save(filename);
     });
   }, []);
 
@@ -349,20 +262,40 @@ const App: React.FC = () => {
   }
 
   const handleDownloadPdf = useCallback(() => {
-    const name = resumeData.personalInfo.fullName;
-    const filename = `Resume-${sanitizeFilename(name)}.pdf`;
-    downloadPdf('resume-preview', filename);
-  }, [resumeData.personalInfo.fullName, downloadPdf]);
+    setDownloadType('resume');
+    setIsAdModalOpen(true);
+  }, []);
 
   const handleCoverLetterDownloadPdf = useCallback(() => {
-    const name = coverLetterData.senderName;
-    const filename = `CoverLetter-${sanitizeFilename(name)}.pdf`;
-    downloadPdf('cover-letter-preview', filename);
-  }, [coverLetterData.senderName, downloadPdf]);
+    setDownloadType('cover-letter');
+    setIsAdModalOpen(true);
+  }, []);
+
+  const handleConfirmDownload = () => {
+    if (downloadType === 'resume') {
+        const name = resumeData.personalInfo.fullName;
+        const filename = `Resume-${sanitizeFilename(name)}.pdf`;
+        downloadPdf('resume-preview', filename);
+    } else if (downloadType === 'cover-letter') {
+        const name = coverLetterData.senderName;
+        const filename = `CoverLetter-${sanitizeFilename(name)}.pdf`;
+        downloadPdf('cover-letter-preview', filename);
+    }
+    setIsAdModalOpen(false);
+    setDownloadType(null);
+  };
   
   return (
-    <div className="min-h-screen flex flex-col font-sans text-gray-800 dark:text-gray-200">
-      <Header theme={theme} setTheme={setTheme} />
+    <div className="min-h-screen flex flex-col font-sans">
+      <AdModal 
+        isOpen={isAdModalOpen}
+        onClose={() => {
+            setIsAdModalOpen(false);
+            setDownloadType(null);
+        }}
+        onConfirm={handleConfirmDownload}
+      />
+      <Header />
       <main className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Navigate to="/resume" replace />} />
@@ -381,8 +314,6 @@ const App: React.FC = () => {
                 setFormattingOptions={setFormattingOptions}
                 onClearAll={handleClearAllResume}
                 onClearSection={handleClearResumeSection}
-                theme={theme}
-                affiliateBanners={affiliateBanners}
             />
           } />
           <Route path="/cover-letter/*" element={
@@ -394,8 +325,6 @@ const App: React.FC = () => {
                 themeId={themeId}
                 setThemeId={setThemeId}
                 onClearSection={handleClearCoverLetterSection}
-                theme={theme}
-                affiliateBanners={affiliateBanners}
             />
           } />
           <Route path="/blog" element={<Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />} />
