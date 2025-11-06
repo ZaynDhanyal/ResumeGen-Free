@@ -14,7 +14,7 @@ function getAiInstance(): GoogleGenAI {
     // The API key is expected to be provided by the environment.
     // If process.env.API_KEY is not available, this will throw an error
     // which will be caught by the calling function.
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+    ai = new GoogleGenAI({ apiKey: AIzaSyBVw6htgrlnba6HO_EOw0rRm4nFuhVn40E });
   }
   return ai;
 }
