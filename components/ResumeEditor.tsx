@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, FormattingOptions } from '../types';
+import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, FormattingOptions, CustomDetail } from '../types';
 import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 import TemplateSelector from './TemplateSelector';
 import ThemeSelector from './ThemeSelector';
@@ -24,6 +24,10 @@ interface ResumeEditorProps {
   onClearAll: () => void;
   onClearSection: (section: keyof ResumeData) => void;
 }
+
+// Fix: Add helper types to correctly type the handleUpdateField function
+type UpdatableSectionKey = 'personalInfo' | 'experience' | 'education' | 'skills' | 'customDetails';
+type ItemTypeForSection<S extends keyof ResumeData> = ResumeData[S] extends (infer U)[] ? U : ResumeData[S];
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; onClear?: () => void }> = ({ title, icon, children, onClear }) => (
   <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -66,11 +70,13 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
     setModalOpen(true);
   }, []);
 
-  const handleUpdateField = useCallback(<K extends keyof T, T>(
-    section: keyof ResumeData,
+  // Fix: Updated function signature to be fully type-safe and resolve inference issues.
+  // This addresses multiple 'not assignable to type never' errors.
+  const handleUpdateField = useCallback(<S extends UpdatableSectionKey, F extends keyof ItemTypeForSection<S>>(
+    section: S,
     index: number | undefined,
-    field: K,
-    value: T[K]
+    field: F,
+    value: ItemTypeForSection<S>[F]
   ) => {
     const sectionData = index !== undefined
       ? (resumeData[section] as any[])[index]
