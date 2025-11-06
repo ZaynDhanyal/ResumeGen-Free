@@ -23,8 +23,8 @@ const InfographicTemplate: React.FC<TemplateProps> = ({ data, theme, formatting 
     const educationToRender = education.length > 0 ? education : SAMPLE_RESUME.education;
     const skillsToRender = skills.length > 0 ? skills : SAMPLE_RESUME.skills;
 
-    // Fix: Changed icon prop type from React.ReactNode to React.ReactElement to allow cloning with className prop.
-    const Section: React.FC<{ title: string; icon: React.ReactElement; children: React.ReactNode }> = ({ title, icon, children }) => (
+    // FIX: Specify a more precise type for the icon prop to allow cloning with className.
+    const Section: React.FC<{ title: string; icon: React.ReactElement<React.SVGProps<SVGSVGElement>>; children: React.ReactNode }> = ({ title, icon, children }) => (
         <section className="mb-8">
             <div className="flex items-center mb-4">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary }}>

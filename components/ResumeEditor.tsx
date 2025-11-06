@@ -25,7 +25,6 @@ interface ResumeEditorProps {
   onClearSection: (section: keyof ResumeData) => void;
 }
 
-// Fix: Add helper types to correctly type the handleUpdateField function
 type UpdatableSectionKey = 'personalInfo' | 'experience' | 'education' | 'skills' | 'customDetails';
 type ItemTypeForSection<S extends keyof ResumeData> = ResumeData[S] extends (infer U)[] ? U : ResumeData[S];
 
@@ -70,8 +69,6 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
     setModalOpen(true);
   }, []);
 
-  // Fix: Updated function signature to be fully type-safe and resolve inference issues.
-  // This addresses multiple 'not assignable to type never' errors.
   const handleUpdateField = useCallback(<S extends UpdatableSectionKey, F extends keyof ItemTypeForSection<S>>(
     section: S,
     index: number | undefined,
