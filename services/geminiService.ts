@@ -7,17 +7,13 @@ let ai: GoogleGenAI | null = null;
 
 /**
  * Initializes and returns the GoogleGenAI instance.
- * This function ensures the instance is created only when needed,
- * preventing potential startup errors if environment variables are not immediately available.
+ * This function ensures the instance is created only when needed.
  */
 function getAiInstance(): GoogleGenAI {
   if (!ai) {
-    if (!process.env.API_KEY) {
-      // This is a placeholder check. The environment variable is expected to be set.
-      console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
-    }
     // The API key is expected to be provided by the environment.
-    // The non-null assertion (!) is used based on this assumption.
+    // If process.env.API_KEY is not available, this will throw an error
+    // which will be caught by the calling function.
     ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
   }
   return ai;
@@ -45,7 +41,7 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
     return response.text;
   } catch (error) {
     console.error("Error generating summary:", error);
-    throw new Error("Failed to communicate with the AI model.");
+    throw error;
   }
 }
 
@@ -68,7 +64,7 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
         return response.text;
     } catch (error) {
         console.error("Error generating bullet points:", error);
-        throw new Error("Failed to communicate with the AI model.");
+        throw error;
     }
 }
 
@@ -102,7 +98,7 @@ export async function generateCoverLetter(resumeData: ResumeData, recipientName:
     return response.text;
   } catch (error) {
     console.error("Error generating cover letter:", error);
-    throw new Error("Failed to communicate with the AI model.");
+    throw error;
   }
 }
 
@@ -154,6 +150,6 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
 
     } catch (error) {
         console.error("Error analyzing keywords:", error);
-        throw new Error("Failed to communicate with the AI model for keyword analysis.");
+        throw error;
     }
 }

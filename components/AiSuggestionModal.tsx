@@ -29,8 +29,17 @@ const AiSuggestionModal: React.FC<AiSuggestionModalProps> = ({ type, context, on
       }
       setSuggestion(result);
     } catch (err) {
-      setError('Failed to get AI suggestion. Please try again.');
       console.error(err);
+      let errorMessage = 'Failed to get AI suggestion. Please try again.';
+      if (err instanceof Error) {
+        // Provide a more specific error message if it's an API key issue.
+        if (err.message.toLowerCase().includes('api key')) {
+          errorMessage = 'The AI service is not configured. Please ensure your API key is valid.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
