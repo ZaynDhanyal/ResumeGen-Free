@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { BlogPost, AffiliateBanner } from '../types';
+import { BlogPost } from '../types';
 import { PRE_CONFIGURED_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '../constants';
-import { LockClosedIcon, PencilIcon, TrashIcon, AddIcon, ExternalLinkIcon, LogoutIcon, MailIcon, CloseIcon } from './icons';
+import { LockClosedIcon, PencilIcon, TrashIcon, AddIcon, LogoutIcon, MailIcon, CloseIcon } from './icons';
 
 interface AdminPanelProps {
     blogPosts: BlogPost[];
     setBlogPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>;
-    affiliateBanners: AffiliateBanner[];
-    setAffiliateBanners: React.Dispatch<React.SetStateAction<AffiliateBanner[]>>;
 }
 
-type AdminTab = 'blog' | 'affiliates' | 'adsense';
 type AdminAuthView = 'login' | 'forgot' | 'reset';
 type ValidationErrors = { [key: string]: string };
 
@@ -42,9 +39,8 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { l
 );
 
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affiliateBanners, setAffiliateBanners }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [activeTab, setActiveTab] = useState<AdminTab>('blog');
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
     // --- Auth State ---
@@ -61,23 +57,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
-    const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
-    const [editingBanner, setEditingBanner] = useState<AffiliateBanner | null>(null);
-
     useEffect(() => {
         if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
             setIsAuthenticated(true);
         }
     }, []);
-
-    const validateUrl = (url: string) => {
-        try {
-            new URL(url);
-            return true;
-        } catch (_) {
-            return false;
-        }
-    }
     
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -171,42 +155,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
         }
     };
     
-    const openBannerModal = (banner: AffiliateBanner | null) => {
-        setEditingBanner(banner ? { ...banner } : { id: '', name: '', url: '', imageUrl: '', description: '' });
-        setIsBannerModalOpen(true);
-        setValidationErrors({});
-    };
-
-    const handleBannerSave = () => {
-        const errors: ValidationErrors = {};
-        if (!editingBanner?.name) errors.name = "Name is required.";
-        if (editingBanner?.id === '' && affiliateBanners.some(b => b.name === editingBanner.name)) {
-            errors.name = "A banner with this name already exists.";
-        }
-        if (!editingBanner?.url || !validateUrl(editingBanner.url)) errors.url = "A valid URL is required.";
-        if (!editingBanner?.imageUrl) errors.imageUrl = "Image is required.";
-        if (!editingBanner?.description) errors.description = "Description is required.";
-
-        if (Object.keys(errors).length > 0) {
-            setValidationErrors(errors);
-            return;
-        }
-
-        if (editingBanner!.id === '') { // Adding new
-            setAffiliateBanners(prev => [...prev, { ...editingBanner!, id: crypto.randomUUID() }]);
-        } else { // Updating existing
-            setAffiliateBanners(prev => prev.map(b => b.id === editingBanner!.id ? editingBanner! : b));
-        }
-        setIsBannerModalOpen(false);
-        setEditingBanner(null);
-    };
-
-    const handleDeleteBanner = (id: string) => {
-        if (window.confirm('Are you sure you want to delete this banner?')) {
-            setAffiliateBanners(prev => prev.filter(banner => banner.id !== id));
-        }
-    }
-    
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (field: string, value: any) => void) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -298,10 +246,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
         );
     }
 
-    const tabButtonClasses = (tab: AdminTab) => `px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
-        activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-    }`;
-
     return (
         <div className="container mx-auto p-4 lg:p-8">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b pb-4 mb-6 gap-4">
@@ -314,84 +258,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                     Logout
                 </button>
             </div>
-            <div className="flex space-x-2 mb-6 border-b overflow-x-auto pb-2">
-                <button onClick={() => setActiveTab('blog')} className={tabButtonClasses('blog')}>Blog Posts</button>
-                <button onClick={() => setActiveTab('affiliates')} className={tabButtonClasses('affiliates')}>Affiliate Banners</button>
-                <button onClick={() => setActiveTab('adsense')} className={tabButtonClasses('adsense')}>AdSense</button>
+
+            {/* BLOG POSTS ONLY */}
+            <div>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-gray-700">Blog Posts</h2>
+                    <button onClick={() => openPostModal(null)} className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700">
+                        <AddIcon className="h-5 w-5 mr-2" /> Add New Post
+                    </button>
+                </div>
+                <div className="space-y-4">
+                    {blogPosts.length > 0 ? blogPosts.map(post => (
+                        <div key={post.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                            <div className="flex items-center gap-4 w-full">
+                                {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="h-12 w-20 object-cover rounded hidden sm:block"/>}
+                                <div>
+                                    <h3 className="font-bold text-gray-800">{post.title}</h3>
+                                    <p className="text-sm text-gray-600">by {post.author} on {new Date(post.date).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <div className="flex space-x-2 self-end sm:self-center">
+                                <button onClick={() => openPostModal(post)} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
+                                <button onClick={() => handleDeletePost(post.id)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
+                            </div>
+                        </div>
+                    )) : (
+                        <p className="text-center text-gray-500 py-8">No blog posts found. Add one to get started!</p>
+                    )}
+                </div>
             </div>
-
-            {/* BLOG POSTS TAB */}
-            {activeTab === 'blog' && (
-                <div>
-                    <div className="flex justify-end mb-4">
-                        <button onClick={() => openPostModal(null)} className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700">
-                            <AddIcon className="h-5 w-5 mr-2" /> Add New Post
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        {blogPosts.length > 0 ? blogPosts.map(post => (
-                            <div key={post.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                                <div className="flex items-center gap-4 w-full">
-                                    {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="h-12 w-20 object-cover rounded hidden sm:block"/>}
-                                    <div>
-                                        <h3 className="font-bold text-gray-800">{post.title}</h3>
-                                        <p className="text-sm text-gray-600">by {post.author} on {new Date(post.date).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                                <div className="flex space-x-2 self-end sm:self-center">
-                                    <button onClick={() => openPostModal(post)} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
-                                    <button onClick={() => handleDeletePost(post.id)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
-                                </div>
-                            </div>
-                        )) : (
-                            <p className="text-center text-gray-500 py-8">No blog posts found. Add one to get started!</p>
-                        )}
-                    </div>
-                </div>
-            )}
-            
-            {/* AFFILIATE BANNERS TAB */}
-            {activeTab === 'affiliates' && (
-                 <div>
-                    <div className="flex justify-end mb-4">
-                        <button onClick={() => openBannerModal(null)} className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700">
-                            <AddIcon className="h-5 w-5 mr-2" /> Add New Banner
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                         {affiliateBanners.length > 0 ? affiliateBanners.map(banner => (
-                            <div key={banner.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                                <div className="flex items-center space-x-4 w-full">
-                                    <img src={banner.imageUrl} alt={banner.name} className="h-10 w-20 object-cover rounded hidden sm:block" />
-                                    <div>
-                                        <h3 className="font-bold text-gray-800">{banner.name}</h3>
-                                        <a href={banner.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline break-all">{banner.url}</a>
-                                    </div>
-                                </div>
-                                <div className="flex space-x-2 self-end sm:self-center">
-                                    <button onClick={() => openBannerModal(banner)} className="p-2 text-gray-500 hover:text-blue-600"><PencilIcon className="h-5 w-5" /></button>
-                                    <button onClick={() => handleDeleteBanner(banner.id)} className="p-2 text-gray-500 hover:text-red-600"><TrashIcon className="h-5 w-5" /></button>
-                                </div>
-                            </div>
-                        )) : (
-                            <p className="text-center text-gray-500 py-8">No affiliate banners found. Add one to get started!</p>
-                        )}
-                    </div>
-                 </div>
-            )}
-
-            {activeTab === 'adsense' && (
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-bold mb-4">Managing AdSense</h2>
-                    <p className="text-gray-700 mb-4">
-                        AdSense is managed directly through your Google AdSense account. This application uses placeholder blocks to show where ads would appear. To manage your ads, including ad units, performance, and payments, you must log in to the official AdSense dashboard.
-                    </p>
-                    <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors">
-                        <ExternalLinkIcon className="h-5 w-5 mr-2" />
-                        Go to AdSense Dashboard
-                    </a>
-                </div>
-            )}
             
             {/* Blog Post Modal */}
             {isPostModalOpen && editingPost && (
@@ -418,33 +313,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ blogPosts, setBlogPosts, affili
                     </div>
                 </div>
             )}
-
-            {/* Affiliate Banner Modal */}
-            {isBannerModalOpen && editingBanner && (
-                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                        <div className="p-4 border-b flex justify-between items-center">
-                            <h3 className="text-lg font-bold">{editingBanner.id === '' ? 'Add New Banner' : 'Edit Banner'}</h3>
-                            <button onClick={() => setIsBannerModalOpen(false)}><CloseIcon className="h-6 w-6" /></button>
-                        </div>
-                        <div className="p-6 space-y-4">
-                           <Input id="banner-name" label="Name" value={editingBanner.name} onChange={e => setEditingBanner({...editingBanner, name: e.target.value})} error={validationErrors.name}/>
-                           <Input id="banner-url" label="Target URL" type="url" value={editingBanner.url} onChange={e => setEditingBanner({...editingBanner, url: e.target.value})} error={validationErrors.url}/>
-                           <Textarea id="banner-desc" label="Description" value={editingBanner.description} onChange={e => setEditingBanner({...editingBanner, description: e.target.value})} error={validationErrors.description}/>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Banner Image</label>
-                                {editingBanner.imageUrl && <img src={editingBanner.imageUrl} alt="preview" className="h-20 rounded mb-2"/>}
-                                <input id="banner-image" type="file" accept="image/*" onChange={e => handleImageUpload(e, (field, value) => setEditingBanner({...editingBanner, [field]: value}))} />
-                                {validationErrors.imageUrl && <p className="text-red-600 text-xs mt-1">{validationErrors.imageUrl}</p>}
-                            </div>
-                        </div>
-                        <div className="p-4 bg-gray-50 flex justify-end">
-                            <button onClick={handleBannerSave} className="px-6 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Save Banner</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
         </div>
     );
 };

@@ -2,23 +2,12 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { Experience, Skill, KeywordAnalysis, ResumeData } from '../types';
 
-// Lazy-initialized instance
-let ai: GoogleGenAI | null = null;
-
-/**
- * Initializes and returns the GoogleGenAI instance.
- * This function ensures the instance is created only when needed.
- */
-function getAiInstance(): GoogleGenAI {
-  if (!ai) {
-    // The API key is expected to be provided by the environment.
-    // If process.env.API_KEY is not available, this will throw an error
-    // which will be caught by the calling function.
-    ai = new GoogleGenAI({ apiKey: AIzaSyBVw6htgrlnba6HO_EOw0rRm4nFuhVn40E });
-  }
-  return ai;
+if (!process.env.API_KEY) {
+  // This is a placeholder check. The environment variable is expected to be set.
+  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
 }
 
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 export async function generateSummary(jobTitle: string, experience: Experience[], skills: Skill[]): Promise<string> {
   const skillsList = skills.map(s => s.name).join(', ');
@@ -33,15 +22,14 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
   `;
 
   try {
-    const aiInstance = getAiInstance();
-    const response = await aiInstance.models.generateContent({
+    const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
     });
     return response.text;
   } catch (error) {
     console.error("Error generating summary:", error);
-    throw error;
+    throw new Error("Failed to communicate with the AI model.");
   }
 }
 
@@ -56,15 +44,14 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
     `;
     
     try {
-        const aiInstance = getAiInstance();
-        const response = await aiInstance.models.generateContent({
+        const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
         });
         return response.text;
     } catch (error) {
         console.error("Error generating bullet points:", error);
-        throw error;
+        throw new Error("Failed to communicate with the AI model.");
     }
 }
 
@@ -90,15 +77,14 @@ export async function generateCoverLetter(resumeData: ResumeData, recipientName:
   `;
 
   try {
-    const aiInstance = getAiInstance();
-    const response = await aiInstance.models.generateContent({
+    const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
     return response.text;
   } catch (error) {
     console.error("Error generating cover letter:", error);
-    throw error;
+    throw new Error("Failed to communicate with the AI model.");
   }
 }
 
@@ -122,8 +108,7 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
     `;
 
     try {
-        const aiInstance = getAiInstance();
-        const response = await aiInstance.models.generateContent({
+        const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
@@ -150,6 +135,6 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
 
     } catch (error) {
         console.error("Error analyzing keywords:", error);
-        throw error;
+        throw new Error("Failed to communicate with the AI model for keyword analysis.");
     }
 }

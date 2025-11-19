@@ -33,18 +33,18 @@ const AdModal: React.FC<AdModalProps> = ({ isOpen, onClose, onConfirm }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg transform transition-all relative">
-        <div className="p-6 border-b flex justify-between items-center">
-          <h3 className="text-lg font-bold text-gray-800">Advertisement</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg transform transition-all relative">
+        <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Advertisement</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
             <CloseIcon className="h-6 w-6" />
           </button>
         </div>
         <div className="p-6 text-center">
-            <p className="text-gray-600 mb-4">Please view this ad to support our free service. Your download will be available shortly.</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Please view this ad to support our free service. Your download will be available shortly.</p>
             <AdsenseBlock width="w-full" height="h-60" />
         </div>
-        <div className="p-4 bg-gray-50 rounded-b-lg flex justify-end space-x-4">
+        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg flex justify-end space-x-4">
           <button
             onClick={onConfirm}
             disabled={countdown > 0}

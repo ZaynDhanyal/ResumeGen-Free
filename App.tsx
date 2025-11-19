@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost, AffiliateBanner } from './types';
-import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS, DEFAULT_AFFILIATE_BANNERS } from './constants';
+import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost } from './types';
+import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS } from './constants';
 import Header from './components/Header';
 import ResumeEditor from './components/ResumeEditor';
 import ResumePreview from './components/ResumePreview';
@@ -10,7 +10,6 @@ import CoverLetterPreview from './components/CoverLetterPreview';
 import Blog from './components/Blog';
 import Footer from './components/Footer';
 import AdminPanel from './components/AdminPanel';
-import AdModal from './components/AdModal';
 import html2canvas from 'html2canvas';
 // @ts-ignore
 import { jsPDF } from 'jspdf';
@@ -85,8 +84,19 @@ const App: React.FC = () => {
   const [templateId, setTemplateId] = useState<TemplateId>('classic');
   const [themeId, setThemeId] = useState<ThemeId>('default');
   const [formattingOptions, setFormattingOptions] = useState<FormattingOptions>(DEFAULT_FORMATTING);
-  const [isAdModalOpen, setIsAdModalOpen] = useState(false);
-  const [downloadType, setDownloadType] = useState<'resume' | 'cover-letter' | null>(null);
+  
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const storedTheme = window.localStorage.getItem('theme');
+      if (storedTheme === 'dark' || storedTheme === 'light') {
+        return storedTheme;
+      }
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    }
+    return 'light';
+  });
 
   // Dynamic content state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => {
@@ -98,23 +108,21 @@ const App: React.FC = () => {
     }
   });
 
-  const [affiliateBanners, setAffiliateBanners] = useState<AffiliateBanner[]>(() => {
-    try {
-      const saved = localStorage.getItem('affiliateBanners');
-      return saved ? JSON.parse(saved) : DEFAULT_AFFILIATE_BANNERS;
-    } catch {
-      return DEFAULT_AFFILIATE_BANNERS;
+  // Theme effect
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-  });
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   // Persist dynamic content to localStorage
   useEffect(() => {
     localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
   }, [blogPosts]);
-
-  useEffect(() => {
-    localStorage.setItem('affiliateBanners', JSON.stringify(affiliateBanners));
-  }, [affiliateBanners]);
   
   // Load shared resume from URL hash
   useEffect(() => {
@@ -262,40 +270,20 @@ const App: React.FC = () => {
   }
 
   const handleDownloadPdf = useCallback(() => {
-    setDownloadType('resume');
-    setIsAdModalOpen(true);
-  }, []);
+    const name = resumeData.personalInfo.fullName;
+    const filename = `Resume-${sanitizeFilename(name)}.pdf`;
+    downloadPdf('resume-preview', filename);
+  }, [resumeData.personalInfo.fullName, downloadPdf]);
 
   const handleCoverLetterDownloadPdf = useCallback(() => {
-    setDownloadType('cover-letter');
-    setIsAdModalOpen(true);
-  }, []);
-
-  const handleConfirmDownload = () => {
-    if (downloadType === 'resume') {
-        const name = resumeData.personalInfo.fullName;
-        const filename = `Resume-${sanitizeFilename(name)}.pdf`;
-        downloadPdf('resume-preview', filename);
-    } else if (downloadType === 'cover-letter') {
-        const name = coverLetterData.senderName;
-        const filename = `CoverLetter-${sanitizeFilename(name)}.pdf`;
-        downloadPdf('cover-letter-preview', filename);
-    }
-    setIsAdModalOpen(false);
-    setDownloadType(null);
-  };
+    const name = coverLetterData.senderName;
+    const filename = `CoverLetter-${sanitizeFilename(name)}.pdf`;
+    downloadPdf('cover-letter-preview', filename);
+  }, [coverLetterData.senderName, downloadPdf]);
   
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <AdModal 
-        isOpen={isAdModalOpen}
-        onClose={() => {
-            setIsAdModalOpen(false);
-            setDownloadType(null);
-        }}
-        onConfirm={handleConfirmDownload}
-      />
-      <Header />
+      <Header theme={theme} setTheme={setTheme} />
       <main className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Navigate to="/resume" replace />} />
@@ -327,16 +315,14 @@ const App: React.FC = () => {
                 onClearSection={handleClearCoverLetterSection}
             />
           } />
-          <Route path="/blog" element={<Blog blogPosts={blogPosts} affiliateBanners={affiliateBanners} />} />
+          <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
           <Route path="/admin" element={<AdminPanel
               blogPosts={blogPosts}
               setBlogPosts={setBlogPosts}
-              affiliateBanners={affiliateBanners}
-              setAffiliateBanners={setAffiliateBanners}
             />} />
         </Routes>
       </main>
-      <Footer affiliateBanners={affiliateBanners} />
+      <Footer />
     </div>
   );
 };

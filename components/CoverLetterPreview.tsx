@@ -15,7 +15,7 @@ const CoverLetterPreview: React.FC<CoverLetterPreviewProps> = ({ coverLetterData
   const { colors } = selectedTheme;
 
   return (
-    <div className="bg-white shadow-lg rounded-lg overflow-hidden relative">
+    <div className="bg-white dark:bg-gray-700 shadow-lg rounded-lg overflow-hidden relative">
       <div className="lg:hidden absolute top-4 right-4 z-10">
           <Link
               to="/cover-letter"

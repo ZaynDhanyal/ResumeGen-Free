@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
@@ -26,6 +27,16 @@
         },
       }
     </script>
+     <script>
+      // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -36,12 +47,13 @@
     "html2canvas": "https://aistudiocdn.com/html2canvas@^1.4.1",
     "jspdf": "https://aistudiocdn.com/jspdf@^3.0.3",
     "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.26.0",
-    "react-router/": "https://aistudiocdn.com/react-router@^6.26.0/"
+    "react-router/": "https://aistudiocdn.com/react-router@^6.26.0/",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
   }
 }
 </script>
 </head>
-  <body class="bg-gray-50">
+  <body class="bg-gray-50 dark:bg-gray-900">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

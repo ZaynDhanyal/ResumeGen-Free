@@ -16,17 +16,17 @@ interface CoverLetterEditorProps {
 }
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; onClear?: () => void }> = ({ title, icon, children, onClear }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
             {icon}
-            <h2 className="text-xl font-bold text-gray-800 ml-3">{title}</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 ml-3">{title}</h2>
         </div>
         {onClear && (
             <button
               onClick={onClear}
               title={`Clear ${title} section`}
-              className="p-1 text-gray-400 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors"
+              className="p-1 text-gray-400 dark:text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500 transition-colors"
             >
               <TrashIcon className="h-5 w-5" />
             </button>
@@ -37,11 +37,11 @@ const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.
   );
   
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
-<input {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+<input {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 dark:placeholder:text-gray-400" />
 );
 
 const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
-<textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition" rows={15} />
+<textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 dark:placeholder:text-gray-400" rows={15} />
 );
 
 const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId, onClearSection }) => {
@@ -70,12 +70,12 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
           />
         )}
 
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-6 flex-wrap">
                  <div className="w-full">
                     <div className="flex items-center mb-4">
                         <PaletteIcon className="h-6 w-6 text-blue-600" />
-                        <h3 className="text-xl font-bold text-gray-800 ml-3">Color Theme</h3>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 ml-3">Color Theme</h3>
                     </div>
                     <ThemeSelector selectedTheme={themeId} onSelectTheme={setThemeId} />
                 </div>
@@ -106,7 +106,7 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
           />
           <button
             onClick={handleAiClick}
-            className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm"
+            className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
           >
             <MagicIcon className="h-4 w-4 mr-2" />
             Generate with AI
