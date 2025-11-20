@@ -2,14 +2,22 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { Experience, Skill, KeywordAnalysis, ResumeData } from '../types';
 
-if (!process.env.API_KEY) {
-  // This is a placeholder check. The environment variable is expected to be set.
-  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
-}
+// Helper to check if key is valid (not empty/undefined)
+const apiKey = process.env.API_KEY;
+const isKeyConfigured = apiKey && apiKey.length > 0;
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+// Initialize with the key or a dummy value to prevent SDK constructor crash.
+// Calls will be guarded below.
+const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
+
+const MISSING_KEY_MSG = "AI features are currently unavailable (API Key not configured). Please set the API_KEY environment variable.";
 
 export async function generateSummary(jobTitle: string, experience: Experience[], skills: Skill[]): Promise<string> {
+  if (!isKeyConfigured) {
+    console.warn("Gemini API Key missing");
+    return MISSING_KEY_MSG;
+  }
+
   const skillsList = skills.map(s => s.name).join(', ');
   const experienceSummary = experience.map(e => `Worked as ${e.jobTitle} at ${e.company}.`).join(' ');
   
@@ -26,14 +34,18 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
         model: 'gemini-2.5-flash',
         contents: prompt,
     });
-    return response.text;
+    return response.text || "No summary generated.";
   } catch (error) {
     console.error("Error generating summary:", error);
-    throw new Error("Failed to communicate with the AI model.");
+    return "Failed to generate summary. Please try again later.";
   }
 }
 
 export async function generateBulletPoints(jobTitle: string, company: string, description: string): Promise<string> {
+    if (!isKeyConfigured) {
+        return "• AI generation disabled (Missing API Key)\n• Please configure your environment variables.";
+    }
+
     const prompt = `
     Based on the role of "${jobTitle}" at "${company}" with the following context: "${description}", 
     generate 3-5 impactful, professional resume bullet points.
@@ -48,14 +60,18 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
             model: 'gemini-2.5-flash',
             contents: prompt,
         });
-        return response.text;
+        return response.text || "";
     } catch (error) {
         console.error("Error generating bullet points:", error);
-        throw new Error("Failed to communicate with the AI model.");
+        return "• Failed to generate bullet points.";
     }
 }
 
 export async function generateCoverLetter(resumeData: ResumeData, recipientName: string, recipientCompany: string): Promise<string> {
+  if (!isKeyConfigured) {
+    return MISSING_KEY_MSG;
+  }
+
   const prompt = `
     Write a professional and compelling cover letter body based on the following resume.
     The letter is for a position at "${recipientCompany}" and is addressed to "${recipientName || 'Hiring Manager'}".
@@ -81,15 +97,23 @@ export async function generateCoverLetter(resumeData: ResumeData, recipientName:
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
-    return response.text;
+    return response.text || "No cover letter generated.";
   } catch (error) {
     console.error("Error generating cover letter:", error);
-    throw new Error("Failed to communicate with the AI model.");
+    return "Failed to generate cover letter.";
   }
 }
 
 
 export async function analyzeKeywords(resumeText: string, jobDescription: string): Promise<KeywordAnalysis> {
+    if (!isKeyConfigured) {
+        // Return empty analysis to prevent crash
+        return {
+            presentKeywords: [],
+            missingKeywords: ["API Key Missing"]
+        };
+    }
+
     const prompt = `
     Analyze the following resume and job description.
     Identify important keywords from the job description.
@@ -129,12 +153,11 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
             },
         });
         
-        // The response text is a string that needs to be parsed into JSON.
-        const jsonText = response.text.trim();
+        const jsonText = response.text ? response.text.trim() : "{}";
         return JSON.parse(jsonText) as KeywordAnalysis;
 
     } catch (error) {
         console.error("Error analyzing keywords:", error);
-        throw new Error("Failed to communicate with the AI model for keyword analysis.");
+        return { presentKeywords: [], missingKeywords: [] };
     }
 }

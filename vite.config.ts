@@ -8,7 +8,20 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      'process.env.API_KEY': JSON.stringify(env.API_KEY),
+      // Ensure it's always a string, even if empty, to prevent JSON.stringify(undefined)
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || ''),
+    },
+    build: {
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            pdf: ['html2canvas', 'jspdf'],
+            genai: ['@google/genai']
+          }
+        }
+      }
     }
   }
 })

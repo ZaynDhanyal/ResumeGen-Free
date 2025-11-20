@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import { TemplateId } from '../types';
 import { TEMPLATES, SAMPLE_RESUME, THEMES, DEFAULT_FORMATTING } from '../constants';
 
 import { EyeIcon, CloseIcon } from './icons';
 
-import ClassicTemplate from './ClassicTemplate';
-import ModernTemplate from './ModernTemplate';
-import CreativeTemplate from './CreativeTemplate';
-import TechTemplate from './TechTemplate';
-import MinimalistTemplate from './MinimalistTemplate';
-import ElegantTemplate from './ElegantTemplate';
-import InfographicTemplate from './InfographicTemplate';
+// Lazy load templates for preview modal
+const ClassicTemplate = React.lazy(() => import('./ClassicTemplate'));
+const ModernTemplate = React.lazy(() => import('./ModernTemplate'));
+const CreativeTemplate = React.lazy(() => import('./CreativeTemplate'));
+const TechTemplate = React.lazy(() => import('./TechTemplate'));
+const MinimalistTemplate = React.lazy(() => import('./MinimalistTemplate'));
+const ElegantTemplate = React.lazy(() => import('./ElegantTemplate'));
+const InfographicTemplate = React.lazy(() => import('./InfographicTemplate'));
 
 interface TemplateSelectorProps {
   selected: TemplateId;
@@ -61,7 +62,9 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
           <div className="h-full overflow-y-auto">
             <div className="transform scale-[0.6] origin-top">
               <div style={{width: '210mm', height: '297mm'}}>
-                <TemplateComponent data={SAMPLE_RESUME} theme={theme} formatting={formatting} />
+                <Suspense fallback={<div className="h-full flex items-center justify-center">Loading preview...</div>}>
+                    <TemplateComponent data={SAMPLE_RESUME} theme={theme} formatting={formatting} />
+                </Suspense>
               </div>
             </div>
           </div>

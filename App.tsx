@@ -1,18 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ResumeData, CoverLetterData, TemplateId, ThemeId, FormattingOptions, BlogPost } from './types';
 import { EMPTY_RESUME, EMPTY_COVER_LETTER, DEFAULT_FORMATTING, DEFAULT_BLOG_POSTS } from './constants';
 import Header from './components/Header';
-import ResumeEditor from './components/ResumeEditor';
-import ResumePreview from './components/ResumePreview';
-import CoverLetterEditor from './components/CoverLetterEditor';
-import CoverLetterPreview from './components/CoverLetterPreview';
-import Blog from './components/Blog';
 import Footer from './components/Footer';
-import AdminPanel from './components/AdminPanel';
-import html2canvas from 'html2canvas';
-// @ts-ignore
-import { jsPDF } from 'jspdf';
+import LoadingSpinner from './components/LoadingSpinner';
+
+// Lazy load components to reduce initial bundle size
+const ResumeEditor = React.lazy(() => import('./components/ResumeEditor'));
+const ResumePreview = React.lazy(() => import('./components/ResumePreview'));
+const CoverLetterEditor = React.lazy(() => import('./components/CoverLetterEditor'));
+const CoverLetterPreview = React.lazy(() => import('./components/CoverLetterPreview'));
+const Blog = React.lazy(() => import('./components/Blog'));
+const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
 
 interface ResumeViewWrapperProps {
   resumeData: ResumeData;
@@ -221,18 +221,24 @@ const App: React.FC = () => {
       }
   }, []);
 
-  const downloadPdf = useCallback((elementId: string, filename: string) => {
+  const downloadPdf = useCallback(async (elementId: string, filename: string) => {
     const element = document.getElementById(elementId);
     if (!element) {
         console.error(`Element with id ${elementId} not found.`);
         return;
     }
 
-    html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: null,
-    }).then(canvas => {
+    try {
+      // Dynamic imports to reduce initial bundle size
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: null,
+      });
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -262,7 +268,10 @@ const App: React.FC = () => {
       }
       
       pdf.save(filename);
-    });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again.");
+    }
   }, []);
 
   const sanitizeFilename = (name: string) => {
@@ -285,42 +294,44 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col font-sans">
       <Header theme={theme} setTheme={setTheme} />
       <main className="flex-grow w-full">
-        <Routes>
-          <Route path="/" element={<Navigate to="/resume" replace />} />
-          <Route path="/resume/*" element={
-            <ResumeViewWrapper 
-                resumeData={resumeData} 
-                onDataChange={handleDataChange}
-                onAddItem={handleAddItem}
-                onRemoveItem={handleRemoveItem}
-                templateId={templateId}
-                setTemplateId={setTemplateId}
-                themeId={themeId}
-                setThemeId={setThemeId}
-                onDownloadPdf={handleDownloadPdf}
-                formattingOptions={formattingOptions}
-                setFormattingOptions={setFormattingOptions}
-                onClearAll={handleClearAllResume}
-                onClearSection={handleClearResumeSection}
-            />
-          } />
-          <Route path="/cover-letter/*" element={
-            <CoverLetterViewWrapper
-                coverLetterData={coverLetterData} 
-                resumeData={resumeData}
-                onDataChange={handleCoverLetterDataChange}
-                onDownloadPdf={handleCoverLetterDownloadPdf}
-                themeId={themeId}
-                setThemeId={setThemeId}
-                onClearSection={handleClearCoverLetterSection}
-            />
-          } />
-          <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
-          <Route path="/admin" element={<AdminPanel
-              blogPosts={blogPosts}
-              setBlogPosts={setBlogPosts}
-            />} />
-        </Routes>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/resume" replace />} />
+            <Route path="/resume/*" element={
+              <ResumeViewWrapper 
+                  resumeData={resumeData} 
+                  onDataChange={handleDataChange}
+                  onAddItem={handleAddItem}
+                  onRemoveItem={handleRemoveItem}
+                  templateId={templateId}
+                  setTemplateId={setTemplateId}
+                  themeId={themeId}
+                  setThemeId={setThemeId}
+                  onDownloadPdf={handleDownloadPdf}
+                  formattingOptions={formattingOptions}
+                  setFormattingOptions={setFormattingOptions}
+                  onClearAll={handleClearAllResume}
+                  onClearSection={handleClearResumeSection}
+              />
+            } />
+            <Route path="/cover-letter/*" element={
+              <CoverLetterViewWrapper
+                  coverLetterData={coverLetterData} 
+                  resumeData={resumeData}
+                  onDataChange={handleCoverLetterDataChange}
+                  onDownloadPdf={handleCoverLetterDownloadPdf}
+                  themeId={themeId}
+                  setThemeId={setThemeId}
+                  onClearSection={handleClearCoverLetterSection}
+              />
+            } />
+            <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
+            <Route path="/admin" element={<AdminPanel
+                blogPosts={blogPosts}
+                setBlogPosts={setBlogPosts}
+              />} />
+          </Routes>
+        </Suspense>
       </main>
       <Footer />
     </div>

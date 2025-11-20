@@ -1,16 +1,8 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { ResumeData, TemplateId, Theme, ThemeId, FormattingOptions } from '../types';
 import { THEMES } from '../constants';
-import { PersonalInfoIcon, PencilIcon } from './icons';
-
-import ClassicTemplate from './ClassicTemplate';
-import ModernTemplate from './ModernTemplate';
-import CreativeTemplate from './CreativeTemplate';
-import TechTemplate from './TechTemplate';
-import MinimalistTemplate from './MinimalistTemplate';
-import ElegantTemplate from './ElegantTemplate';
-import InfographicTemplate from './InfographicTemplate';
+import { PencilIcon } from './icons';
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -25,6 +17,15 @@ export interface TemplateProps {
   formatting: FormattingOptions;
 }
 
+// Lazy load templates
+const ClassicTemplate = React.lazy(() => import('./ClassicTemplate'));
+const ModernTemplate = React.lazy(() => import('./ModernTemplate'));
+const CreativeTemplate = React.lazy(() => import('./CreativeTemplate'));
+const TechTemplate = React.lazy(() => import('./TechTemplate'));
+const MinimalistTemplate = React.lazy(() => import('./MinimalistTemplate'));
+const ElegantTemplate = React.lazy(() => import('./ElegantTemplate'));
+const InfographicTemplate = React.lazy(() => import('./InfographicTemplate'));
+
 const templates = {
   classic: ClassicTemplate,
   modern: ModernTemplate,
@@ -36,7 +37,8 @@ const templates = {
 };
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId, formattingOptions }) => {
-  const TemplateComponent = templates[templateId] || ClassicTemplate;
+  // Default to ClassicTemplate if not found, but it's lazy so accessing templates.classic is safe
+  const TemplateComponent = templates[templateId] || templates.classic;
   const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
 
   return (
@@ -51,7 +53,9 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, t
             </Link>
         </div>
         <div id="resume-preview">
-            <TemplateComponent data={resumeData} theme={selectedTheme} formatting={formattingOptions} />
+            <Suspense fallback={<div className="p-12 text-center text-gray-500">Loading template...</div>}>
+                <TemplateComponent data={resumeData} theme={selectedTheme} formatting={formattingOptions} />
+            </Suspense>
         </div>
     </div>
   );

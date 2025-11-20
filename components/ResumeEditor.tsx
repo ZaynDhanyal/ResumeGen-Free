@@ -65,11 +65,11 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
     setModalOpen(true);
   }, []);
 
-  const handleUpdateField = useCallback(<K extends keyof T, T>(
+  const handleUpdateField = useCallback((
     section: keyof ResumeData,
     index: number | undefined,
-    field: K,
-    value: T[K]
+    field: string,
+    value: any
   ) => {
     const sectionData = index !== undefined
       ? (resumeData[section] as any[])[index]
