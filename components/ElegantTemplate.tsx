@@ -5,7 +5,6 @@ import { SAMPLE_RESUME, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 const ElegantTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
     const { personalInfo, summary, experience, education, skills, customDetails } = data;
     const { colors } = theme;
-    // Elegant template should probably override font to a serif one by default for a classier look.
     const fontClass = FONT_OPTIONS.find(f => f.id === formatting.fontFamily)?.css || 'font-merriweather';
     const lineHeightClass = LINE_HEIGHT_OPTIONS.find(l => l.id === formatting.lineHeight)?.css || 'leading-relaxed';
 
@@ -15,83 +14,89 @@ const ElegantTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) =
     const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
 
     const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-        <section className="mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-[.2em] mb-3" style={{ color: colors.primary }}>{title}</h2>
-            <div className="border-t-2" style={{borderColor: colors.secondary}}></div>
-            <div className="pt-3">
+        <section className="mb-5">
+            <h2 className="text-[10px] font-bold uppercase tracking-[.2em] mb-1.5" style={{ color: colors.primary }}>{title}</h2>
+            <div className="border-t" style={{borderColor: colors.secondary}}></div>
+            <div className="pt-2">
                 {children}
             </div>
         </section>
     );
 
     return (
-        <div className={`p-8 ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
-            <header className="text-center mb-8">
-                <h1 className="text-5xl font-bold">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
-                <p className="text-xl mt-2 tracking-wide">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
+        <div className={`p-6 ${fontClass}`} style={{ backgroundColor: colors.background, color: colors.text, minHeight: '297mm' }}>
+            <header className="text-center mb-6">
+                <h1 className="text-3xl font-bold tracking-tight">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
+                <p className="text-base mt-1 tracking-wide italic text-gray-600">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
             </header>
             
-            <div className="flex justify-center items-center flex-wrap gap-x-6 gap-y-2 text-xs mb-8 border-y-2 py-2" style={{borderColor: colors.secondary}}>
+            <div className="flex justify-center items-center flex-wrap gap-x-4 gap-y-1 text-[10px] mb-6 border-y py-2" style={{borderColor: colors.secondary}}>
                 <span>{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</span>
                 <span>{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</span>
                 <span>{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</span>
-                {personalInfo.linkedin && <span>{personalInfo.linkedin}</span>}
-                {personalInfo.website && <span>{personalInfo.website}</span>}
+                {personalInfo.linkedin && <span>{personalInfo.linkedin.replace(/^https?:\/\//, '')}</span>}
+                {personalInfo.website && <span>{personalInfo.website.replace(/^https?:\/\//, '')}</span>}
             </div>
 
             <Section title="Profile">
-                <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>
+                <p className={`text-xs ${lineHeightClass}`}>{summary || SAMPLE_RESUME.summary}</p>
             </Section>
 
-            <div className="grid grid-cols-12 gap-8">
+            <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-8">
                     <Section title="Experience">
+                        <div className="space-y-4">
                         {experiencesToRender.map(exp => (
-                            <div key={exp.id} className="mb-4">
-                                <div className="flex justify-between items-baseline">
-                                    <h3 className="text-lg font-semibold">{exp.jobTitle}</h3>
-                                    <p className="text-xs font-light" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
+                            <div key={exp.id}>
+                                <div className="flex justify-between items-baseline mb-0.5">
+                                    <h3 className="text-sm font-semibold">{exp.jobTitle}</h3>
+                                    <p className="text-[10px] font-light opacity-75 whitespace-nowrap">{exp.startDate} - {exp.endDate}</p>
                                 </div>
-                                <p className="text-md italic">{exp.company}, {exp.location}</p>
-                                <ul className="list-disc list-inside mt-1 text-sm space-y-1">
-                                    {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
+                                <p className="text-xs italic mb-1">{exp.company}, {exp.location}</p>
+                                <ul className={`list-disc list-inside text-xs space-y-0.5 ${lineHeightClass}`}>
+                                    {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i} className="pl-1">{line.replace('•','').trim()}</li>)}
                                 </ul>
                             </div>
                         ))}
+                        </div>
                     </Section>
                 </div>
 
                 <div className="col-span-4">
                     <Section title="Skills">
-                        <div className="flex flex-col gap-1">
-                            {skillsToRender.map(skill => <span key={skill.id} className="text-sm">{skill.name}</span>)}
+                        <div className={`flex flex-col gap-1 ${lineHeightClass}`}>
+                            {skillsToRender.map(skill => <span key={skill.id} className="text-xs border-b border-gray-100 pb-0.5">{skill.name}</span>)}
                         </div>
                     </Section>
 
                     <Section title="Education">
+                        <div className="space-y-2">
                         {educationToRender.map(edu => (
-                            <div key={edu.id} className="mb-3">
-                                <h3 className="text-md font-semibold">{edu.degree}</h3>
-                                <p className="text-sm italic">{edu.institution}</p>
-                                <p className="text-xs font-light" style={{ opacity: 0.8 }}>{edu.startDate} - {edu.endDate}</p>
+                            <div key={edu.id}>
+                                <h3 className="text-xs font-semibold leading-tight">{edu.degree}</h3>
+                                <p className="text-[10px] italic">{edu.institution}</p>
+                                <p className="text-[9px] font-light opacity-75">{edu.startDate} - {edu.endDate}</p>
                             </div>
                         ))}
+                        </div>
                     </Section>
 
                     {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
                         <Section title="Details">
-                            {personalInfo.nationality && (
-                                <div className="text-sm mb-2">
-                                    <p className="font-semibold">Nationality</p>
-                                    <p>{personalInfo.nationality}</p>
-                                </div>
-                             )}
-                             {customDetailsToRender.map(detail => (
-                                <div key={detail.id} className="text-sm mb-2">
-                                    <p className="font-semibold">{detail.label}</p>
-                                    <p>{detail.value}</p>
-                                </div>
-                            ))}
+                            <div className={`space-y-1.5 text-xs ${lineHeightClass}`}>
+                                {personalInfo.nationality && (
+                                    <div>
+                                        <p className="font-semibold">Nationality</p>
+                                        <p>{personalInfo.nationality}</p>
+                                    </div>
+                                )}
+                                {customDetailsToRender.map(detail => (
+                                    <div key={detail.id}>
+                                        <p className="font-semibold">{detail.label}</p>
+                                        <p>{detail.value}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </Section>
                     )}
                 </div>

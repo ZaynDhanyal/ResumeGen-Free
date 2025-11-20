@@ -24,50 +24,50 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
     const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
     
     return (
-        <div className={`grid grid-cols-1 md:grid-cols-12 gap-0 min-h-[297mm] ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
-            <aside className="col-span-12 md:col-span-4 p-4 sm:p-8" style={{ backgroundColor: colors.secondary }}>
-                <header className="mb-8">
-                    <h1 className="text-3xl font-bold" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
-                    <p className="text-lg" style={{ color: colors.text, opacity: 0.9 }}>{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
+        <div className={`grid grid-cols-1 md:grid-cols-12 gap-0 min-h-[297mm] ${fontClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
+            <aside className="col-span-4 p-5" style={{ backgroundColor: colors.secondary }}>
+                <header className="mb-6">
+                    <h1 className="text-xl font-bold leading-tight mb-1" style={{ color: colors.primary }}>{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
+                    <p className="text-xs font-medium opacity-90">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
                 </header>
                 
-                <section className="mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Contact</h2>
-                    <p className="text-xs mb-1 break-all">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
-                    <p className="text-xs mb-1">{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
-                    <p className="text-xs mb-1">{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
-                    <p className="text-xs mb-1">{personalInfo.linkedin || SAMPLE_RESUME.personalInfo.linkedin}</p>
-                    <p className="text-xs mb-1">{personalInfo.website || SAMPLE_RESUME.personalInfo.website}</p>
+                <section className="mb-5">
+                    <h2 className="text-[10px] font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Contact</h2>
+                    <div className={`text-[10px] space-y-1 ${lineHeightClass}`}>
+                        <p className="break-all">{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</p>
+                        <p>{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</p>
+                        <p>{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</p>
+                        {personalInfo.linkedin && <p className="break-all">{personalInfo.linkedin.replace(/^https?:\/\//, '')}</p>}
+                        {personalInfo.website && <p className="break-all">{personalInfo.website.replace(/^https?:\/\//, '')}</p>}
+                    </div>
                 </section>
 
                 {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
-                     <section className="mb-6">
-                        <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Details</h2>
-                        <div className="space-y-2">
+                     <section className="mb-5">
+                        <h2 className="text-[10px] font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Details</h2>
+                        <div className={`space-y-1.5 text-[10px] ${lineHeightClass}`}>
                             {personalInfo.nationality && (
                                 <div>
-                                    <p className="text-xs font-bold">Nationality</p>
-                                    <p className="text-xs">{personalInfo.nationality}</p>
+                                    <span className="font-bold">Nationality:</span> {personalInfo.nationality}
                                 </div>
                             )}
                             {customDetailsToRender.map(detail => (
                                 <div key={detail.id}>
-                                    <p className="text-xs font-bold">{detail.label}</p>
-                                    <p className="text-xs">{detail.value}</p>
+                                    <span className="font-bold">{detail.label}:</span> {detail.value}
                                 </div>
                             ))}
                         </div>
                     </section>
                 )}
                 
-                <section className="mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Skills</h2>
+                <section className="mb-5">
+                    <h2 className="text-[10px] font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Skills</h2>
                     <div className="space-y-2">
                         {skillsToRender.map(skill => (
                             <div key={skill.id}>
-                                <p className="text-xs font-semibold">{skill.name}</p>
-                                <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">
-                                    <div className="h-1.5 rounded-full" style={{ width: skillLevelToPercentage(skill.level), backgroundColor: colors.primary }}></div>
+                                <p className="text-[10px] font-semibold">{skill.name}</p>
+                                <div className="w-full bg-gray-300/50 rounded-full h-1 mt-0.5">
+                                    <div className="h-1 rounded-full" style={{ width: skillLevelToPercentage(skill.level), backgroundColor: colors.primary }}></div>
                                 </div>
                             </div>
                         ))}
@@ -75,36 +75,40 @@ const TechTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }) => {
                 </section>
                 
                 <section>
-                    <h2 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Education</h2>
+                    <h2 className="text-[10px] font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ borderBottomColor: colors.primary, color: colors.primary }}>Education</h2>
+                    <div className={lineHeightClass}>
                     {educationToRender.map(edu => (
-                        <div key={edu.id} className="mb-3">
-                            <h3 className="font-bold text-xs">{edu.degree}</h3>
-                            <p className="text-xs italic">{edu.institution}</p>
-                            <p className="text-xs" style={{ opacity: 0.8 }}>{edu.startDate} - {edu.endDate}</p>
+                        <div key={edu.id} className="mb-2">
+                            <h3 className="font-bold text-[10px] leading-tight">{edu.degree}</h3>
+                            <p className="text-[10px] italic opacity-90">{edu.institution}</p>
+                            <p className="text-[9px] opacity-70">{edu.startDate} - {edu.endDate}</p>
                         </div>
                     ))}
+                    </div>
                 </section>
             </aside>
-            <main className="col-span-12 md:col-span-8 p-4 sm:p-8">
-                <section className="mb-6">
-                    <h2 className="text-xl font-bold uppercase tracking-wider border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Summary</h2>
-                    <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>
+            <main className="col-span-8 p-5">
+                <section className="mb-5">
+                    <h2 className="text-sm font-bold uppercase tracking-wider border-b-2 pb-1 mb-2" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Summary</h2>
+                    <p className={`text-xs ${lineHeightClass}`}>{summary || SAMPLE_RESUME.summary}</p>
                 </section>
                 
                 <section>
-                    <h2 className="text-xl font-bold uppercase tracking-wider border-b-2 pb-2 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Experience</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-wider border-b-2 pb-1 mb-3" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>Experience</h2>
+                    <div className="space-y-3">
                     {experiencesToRender.map(exp => (
-                        <div key={exp.id} className="mb-4">
-                            <div className="flex justify-between items-baseline">
-                                <h3 className="text-lg font-semibold">{exp.jobTitle}</h3>
-                                <p className="text-xs font-mono" style={{ opacity: 0.8 }}>{exp.startDate} - {exp.endDate}</p>
+                        <div key={exp.id}>
+                            <div className="flex justify-between items-baseline mb-0.5">
+                                <h3 className="text-sm font-bold">{exp.jobTitle}</h3>
+                                <p className="text-[10px] font-mono opacity-70 whitespace-nowrap">{exp.startDate} - {exp.endDate}</p>
                             </div>
-                            <p className="text-md font-medium">{exp.company}, {exp.location}</p>
-                            <ul className="list-disc list-inside mt-1 text-sm space-y-1">
-                                {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
+                            <p className="text-xs font-semibold mb-1">{exp.company}, {exp.location}</p>
+                            <ul className={`list-disc list-inside text-xs space-y-0.5 ${lineHeightClass}`}>
+                                {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i} className="pl-1">{line.replace('•','').trim()}</li>)}
                             </ul>
                         </div>
                     ))}
+                    </div>
                 </section>
             </main>
         </div>

@@ -37,7 +37,7 @@ const templates = {
 };
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, themeId, formattingOptions }) => {
-  // Default to ClassicTemplate if not found, but it's lazy so accessing templates.classic is safe
+  // Default to ClassicTemplate if not found
   const TemplateComponent = templates[templateId] || templates.classic;
   const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
 
@@ -53,8 +53,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, templateId, t
             </Link>
         </div>
         <div id="resume-preview">
-            <Suspense fallback={<div className="p-12 text-center text-gray-500">Loading template...</div>}>
-                <TemplateComponent data={resumeData} theme={selectedTheme} formatting={formattingOptions} />
+            {/* Adding key={templateId} forces React to destroy the old component and mount the new one fresh.
+                This fixes issues where data might not visually update or styling might leak between templates. */}
+            <Suspense fallback={<div className="p-12 text-center text-gray-500 min-h-[297mm] flex items-center justify-center">Loading template...</div>}>
+                <TemplateComponent key={templateId} data={resumeData} theme={selectedTheme} formatting={formattingOptions} />
             </Suspense>
         </div>
     </div>

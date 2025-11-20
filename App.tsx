@@ -233,13 +233,17 @@ const App: React.FC = () => {
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
 
+      // Increase scale for better quality (4 is roughly Retina quality for print)
+      const scale = 4; 
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: scale,
         useCORS: true,
-        backgroundColor: null,
+        backgroundColor: '#ffffff', // Ensure white background
+        logging: false,
+        windowWidth: 1200, // Force desktop width to ensure responsive layouts (like grids) render correctly
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png'); // Use PNG for lossless text sharpness
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -256,14 +260,15 @@ const App: React.FC = () => {
       const totalImageHeight = canvasHeight / ratio;
 
       let position = 0;
+      let heightLeft = totalImageHeight;
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, Math.min(totalImageHeight, pdfHeight));
-      let heightLeft = totalImageHeight - pdfHeight;
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight, '', 'FAST');
+      heightLeft -= pdfHeight;
 
       while (heightLeft > 0) {
         position -= pdfHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight);
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight, '', 'FAST');
         heightLeft -= pdfHeight;
       }
       

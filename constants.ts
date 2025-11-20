@@ -49,6 +49,7 @@ export const EMPTY_RESUME: ResumeData = {
   education: [],
   skills: [],
   customDetails: [],
+  sectionOrder: ['personalInfo', 'customDetails', 'summary', 'experience', 'education', 'skills'],
 };
 
 export const EMPTY_COVER_LETTER: CoverLetterData = {
@@ -126,6 +127,7 @@ export const SAMPLE_RESUME: ResumeData = {
   customDetails: [
     { id: 'cd1', label: 'Marital Status', value: 'Single' },
   ],
+  sectionOrder: ['personalInfo', 'summary', 'experience', 'education', 'skills', 'customDetails'],
 };
 
 export const SAMPLE_COVER_LETTER: CoverLetterData = {

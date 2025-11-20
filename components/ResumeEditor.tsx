@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, FormattingOptions } from '../types';
+import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, FormattingOptions, SectionKey } from '../types';
 import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 import TemplateSelector from './TemplateSelector';
 import ThemeSelector from './ThemeSelector';
 import KeywordOptimizer from './KeywordOptimizer';
 import AiSuggestionModal from './AiSuggestionModal';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, PrintIcon } from './icons';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, PrintIcon, ChevronUpIcon, ChevronDownIcon } from './icons';
 
 interface ResumeEditorProps {
   resumeData: ResumeData;
@@ -24,22 +24,53 @@ interface ResumeEditorProps {
   onClearSection: (section: keyof ResumeData) => void;
 }
 
-const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; onClear?: () => void }> = ({ title, icon, children, onClear }) => (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-    <div className="flex justify-between items-center mb-4">
+const Section: React.FC<{ 
+    title: string; 
+    icon: React.ReactNode; 
+    children: React.ReactNode; 
+    onClear?: () => void;
+    onMoveUp?: () => void;
+    onMoveDown?: () => void;
+    isFirst?: boolean;
+    isLast?: boolean;
+}> = ({ title, icon, children, onClear, onMoveUp, onMoveDown, isFirst, isLast }) => (
+  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 transition-all hover:shadow-lg">
+    <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
       <div className="flex items-center">
         {icon}
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 ml-3">{title}</h2>
       </div>
-      {onClear && (
-        <button
-          onClick={onClear}
-          title={`Clear ${title} section`}
-          className="p-1 text-gray-400 dark:text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500 transition-colors"
-        >
-          <TrashIcon className="h-5 w-5" />
-        </button>
-      )}
+      <div className="flex items-center gap-1">
+        {onMoveUp && (
+            <button
+                onClick={onMoveUp}
+                disabled={isFirst}
+                title="Move Section Up"
+                className={`p-1.5 rounded-md transition-colors ${isFirst ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-700'}`}
+            >
+                <ChevronUpIcon className="h-5 w-5" />
+            </button>
+        )}
+        {onMoveDown && (
+            <button
+                onClick={onMoveDown}
+                disabled={isLast}
+                title="Move Section Down"
+                className={`p-1.5 rounded-md transition-colors ${isLast ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-700'}`}
+            >
+                <ChevronDownIcon className="h-5 w-5" />
+            </button>
+        )}
+        {onClear && (
+            <button
+            onClick={onClear}
+            title={`Clear ${title} section`}
+            className="ml-2 p-1.5 text-gray-400 dark:text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500 transition-colors"
+            >
+            <TrashIcon className="h-5 w-5" />
+            </button>
+        )}
+      </div>
     </div>
     {children}
   </div>
@@ -151,6 +182,16 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
     }
   }, []);
 
+  const handleMoveSection = (index: number, direction: 'up' | 'down') => {
+    const currentOrder = [...(resumeData.sectionOrder || ['personalInfo', 'customDetails', 'summary', 'experience', 'education', 'skills'])];
+    if (direction === 'up' && index > 0) {
+        [currentOrder[index], currentOrder[index - 1]] = [currentOrder[index - 1], currentOrder[index]];
+    } else if (direction === 'down' && index < currentOrder.length - 1) {
+        [currentOrder[index], currentOrder[index + 1]] = [currentOrder[index + 1], currentOrder[index]];
+    }
+    onDataChange('sectionOrder', currentOrder);
+  };
+
   const getIconForLabel = (label: string): React.ReactNode => {
     const lowerLabel = label.toLowerCase();
     if (lowerLabel.includes('nation') || lowerLabel.includes('country')) {
@@ -166,6 +207,212 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         return <CalendarIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
     }
     return <InformationCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
+  };
+
+  // Default order fallback for legacy data
+  const sectionOrder = resumeData.sectionOrder || ['personalInfo', 'customDetails', 'summary', 'experience', 'education', 'skills'];
+
+  const renderSectionContent = (sectionKey: SectionKey) => {
+      switch(sectionKey) {
+          case 'personalInfo':
+              return (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input placeholder="Full Name" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
+                        <Input placeholder="Job Title" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
+                        <Input placeholder="Email Address" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
+                        <Input placeholder="Phone Number" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
+                        <Input placeholder="City, State" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
+                        <Input placeholder="LinkedIn Profile URL" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
+                        <Input placeholder="Personal Website/Portfolio" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
+                        <Input placeholder="Nationality" value={resumeData.personalInfo.nationality} onChange={e => handleUpdateField('personalInfo', undefined, 'nationality', e.target.value)} />
+                    </div>
+                    <div className="mt-4 pt-4 border-t dark:border-gray-700">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Picture</label>
+                        <div className="flex items-center gap-4">
+                            {resumeData.personalInfo.profilePicture ? (
+                                <div className="relative flex-shrink-0">
+                                    <img src={resumeData.personalInfo.profilePicture} alt="Profile Preview" className="h-20 w-20 rounded-full object-cover shadow-sm border dark:border-gray-600" />
+                                    <button 
+                                        onClick={removeProfilePicture} 
+                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 leading-none hover:bg-red-600 shadow-sm"
+                                        title="Remove picture"
+                                    >
+                                        <XCircleIcon className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="h-20 w-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0 border dark:border-gray-600 text-gray-400 dark:text-gray-500">
+                                    <PersonalInfoIcon className="h-10 w-10" />
+                                </div>
+                            )}
+                            <div className="flex-1">
+                                <input 
+                                    type="file" 
+                                    accept="image/png, image/jpeg" 
+                                    onChange={handleImageUpload} 
+                                    className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-blue-300 dark:hover:file:bg-gray-600 cursor-pointer"
+                                />
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Recommended: Square JPG or PNG, max 2MB.</p>
+                            </div>
+                        </div>
+                    </div>
+                </>
+              );
+          case 'customDetails':
+              return (
+                <>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 -mt-2">Add custom fields like Marital Status, etc.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {resumeData.customDetails.map((detail, index) => (
+                        <div key={detail.id} className="relative bg-gray-50 dark:bg-gray-700/50 p-4 border dark:border-gray-700 rounded-lg shadow-sm">
+                            <button onClick={() => onRemoveItem('customDetails', index)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+                                <TrashIcon className="h-5 w-5"/>
+                            </button>
+                            <div className="flex items-start gap-4">
+                                <div className="mt-2.5 flex-shrink-0">
+                                    {getIconForLabel(detail.label)}
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <Input 
+                                        placeholder="Label (e.g., Marital Status)" 
+                                        value={detail.label} 
+                                        onChange={e => handleUpdateField('customDetails', index, 'label', e.target.value)} 
+                                    />
+                                    <Input 
+                                        placeholder="Value (e.g., Single)" 
+                                        value={detail.value} 
+                                        onChange={e => handleUpdateField('customDetails', index, 'value', e.target.value)} 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    </div>
+                    <button 
+                    onClick={() => onAddItem('customDetails', { ...EMPTY_CUSTOM_DETAIL, id: crypto.randomUUID() })} 
+                    className="mt-4 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    >
+                    <AddIcon className="h-5 w-5 mr-2" /> Add Custom Detail
+                    </button>
+                </>
+              );
+          case 'summary':
+              return (
+                <>
+                    <Textarea placeholder="Write a brief 2-3 sentence summary of your professional experience and career goals." value={resumeData.summary} onChange={e => onDataChange('summary', e.target.value)} />
+                    <button
+                    onClick={() => handleAiClick('summary', { jobTitle: resumeData.personalInfo.jobTitle, experience: resumeData.experience, skills: resumeData.skills }, (text) => onDataChange('summary', text))}
+                    className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
+                    >
+                    <MagicIcon className="h-4 w-4 mr-2" />
+                    Generate with AI
+                    </button>
+                </>
+              );
+          case 'experience':
+              return (
+                <>
+                    {resumeData.experience.map((exp, index) => (
+                    <div key={exp.id} className="p-4 border rounded-md mb-4 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <Input placeholder="Job Title" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
+                        <Input placeholder="Company Name" value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
+                        <Input placeholder="City, State" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
+                        <div className="flex gap-4">
+                            <Input placeholder="Start Date (e.g., Jan 2020)" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
+                            <Input placeholder="End Date (e.g., Present)" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
+                        </div>
+                        </div>
+                        <Textarea placeholder="Describe your responsibilities and achievements in bullet points. e.g., • Led the development of a new client-facing dashboard..." value={exp.description} onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} />
+                        <div className="flex justify-between items-center mt-2">
+                        <button
+                            onClick={() => handleAiClick('bulletPoints', { jobTitle: exp.jobTitle, company: exp.company, description: exp.description }, (text) => handleUpdateField('experience', index, 'description', text))}
+                            className="flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
+                        >
+                            <MagicIcon className="h-4 w-4 mr-2" />
+                            Generate Bullets with AI
+                        </button>
+                        <button onClick={() => onRemoveItem('experience', index)} className="text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-2"><TrashIcon className="h-5 w-5"/></button>
+                        </div>
+                    </div>
+                    ))}
+                    <button onClick={() => onAddItem('experience', { ...EMPTY_EXPERIENCE, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                    <AddIcon className="h-5 w-5 mr-2" /> Add Experience
+                    </button>
+                </>
+              );
+          case 'education':
+              return (
+                <>
+                    {resumeData.education.map((edu, index) => (
+                    <div key={edu.id} className="p-4 border rounded-md mb-4 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <Input placeholder="Degree or Field of Study" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
+                        <Input placeholder="Institution Name" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
+                        <div className="flex gap-4">
+                            <Input placeholder="Start Date (e.g., Sep 2013)" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
+                            <Input placeholder="End Date (e.g., May 2017)" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
+                        </div>
+                        </div>
+                        <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-2 float-right"><TrashIcon className="h-5 w-5"/></button>
+
+                    </div>
+                    ))}
+                    <button onClick={() => onAddItem('education', { ...EMPTY_EDUCATION, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                    <AddIcon className="h-5 w-5 mr-2" /> Add Education
+                    </button>
+                </>
+              );
+          case 'skills':
+              return (
+                <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {resumeData.skills.map((skill, index) => (
+                    <div key={skill.id} className="flex items-center bg-gray-50 dark:bg-gray-700/50 p-2 border dark:border-gray-700 rounded-md">
+                        <Input placeholder="Skill (e.g., React)" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
+                        <button onClick={() => onRemoveItem('skills', index)} className="ml-2 text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-1"><TrashIcon className="h-4 w-4"/></button>
+                    </div>
+                    ))}
+                    </div>
+                    <button onClick={() => onAddItem('skills', { ...EMPTY_SKILL, id: crypto.randomUUID() })} className="mt-4 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                    <AddIcon className="h-5 w-5 mr-2" /> Add Skill
+                    </button>
+                </>
+              );
+          default:
+              return null;
+      }
+  };
+
+  const getSectionTitle = (key: SectionKey): string => {
+      switch(key) {
+          case 'personalInfo': return 'Personal Info';
+          case 'summary': return 'Professional Summary';
+          case 'experience': return 'Experience';
+          case 'education': return 'Education';
+          case 'skills': return 'Skills';
+          case 'customDetails': return 'Custom Details';
+          default: return key;
+      }
+  };
+  
+  const getSectionIcon = (key: SectionKey) => {
+    switch(key) {
+        case 'personalInfo': return <PersonalInfoIcon className="h-6 w-6 text-blue-600" />;
+        case 'summary': return <SummaryIcon className="h-6 w-6 text-blue-600" />;
+        case 'experience': return <ExperienceIcon className="h-6 w-6 text-blue-600" />;
+        case 'education': return <EducationIcon className="h-6 w-6 text-blue-600" />;
+        case 'skills': return <SkillsIcon className="h-6 w-6 text-blue-600" />;
+        case 'customDetails': return <InformationCircleIcon className="h-6 w-6 text-blue-600" />;
+        default: return <DocumentTextIcon className="h-6 w-6 text-blue-600" />;
+    }
+  };
+  
+  const getClearHandler = (key: SectionKey) => {
+      // Personal Info cannot be completely cleared via a section header button in the original logic, only fields.
+      // But we can map it to onClearSection('personalInfo')
+      return () => onClearSection(key as keyof ResumeData);
   };
 
   return (
@@ -261,153 +508,21 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         </div>
       </div>
 
-
-      <Section title="Personal Info" icon={<PersonalInfoIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('personalInfo')}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input placeholder="Full Name" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
-          <Input placeholder="Job Title" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
-          <Input placeholder="Email Address" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
-          <Input placeholder="Phone Number" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
-          <Input placeholder="City, State" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
-          <Input placeholder="LinkedIn Profile URL" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
-          <Input placeholder="Personal Website/Portfolio" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
-          <Input placeholder="Nationality" value={resumeData.personalInfo.nationality} onChange={e => handleUpdateField('personalInfo', undefined, 'nationality', e.target.value)} />
-        </div>
-        <div className="mt-4 pt-4 border-t dark:border-gray-700">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Picture</label>
-            <div className="flex items-center gap-4">
-                {resumeData.personalInfo.profilePicture && (
-                    <div className="relative flex-shrink-0">
-                        <img src={resumeData.personalInfo.profilePicture} alt="Profile Preview" className="h-20 w-20 rounded-full object-cover" />
-                        <button 
-                            onClick={removeProfilePicture} 
-                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 leading-none hover:bg-red-600"
-                            title="Remove picture"
-                        >
-                            <XCircleIcon className="h-5 w-5" />
-                        </button>
-                    </div>
-                )}
-                <input 
-                    type="file" 
-                    accept="image/png, image/jpeg" 
-                    onChange={handleImageUpload} 
-                    className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-blue-300 dark:hover:file:bg-gray-600"
-                />
-            </div>
-        </div>
-      </Section>
-      
-      <Section title="Custom Details" icon={<InformationCircleIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('customDetails')}>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 -mt-2">Add custom fields like Marital Status, etc.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {resumeData.customDetails.map((detail, index) => (
-            <div key={detail.id} className="relative bg-gray-50 dark:bg-gray-700/50 p-4 border dark:border-gray-700 rounded-lg shadow-sm">
-                <button onClick={() => onRemoveItem('customDetails', index)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
-                    <TrashIcon className="h-5 w-5"/>
-                </button>
-                <div className="flex items-start gap-4">
-                    <div className="mt-2.5 flex-shrink-0">
-                        {getIconForLabel(detail.label)}
-                    </div>
-                    <div className="flex-1 space-y-2">
-                         <Input 
-                            placeholder="Label (e.g., Marital Status)" 
-                            value={detail.label} 
-                            onChange={e => handleUpdateField('customDetails', index, 'label', e.target.value)} 
-                         />
-                         <Input 
-                            placeholder="Value (e.g., Single)" 
-                            value={detail.value} 
-                            onChange={e => handleUpdateField('customDetails', index, 'value', e.target.value)} 
-                         />
-                    </div>
-                </div>
-            </div>
-          ))}
-        </div>
-        <button 
-          onClick={() => onAddItem('customDetails', { ...EMPTY_CUSTOM_DETAIL, id: crypto.randomUUID() })} 
-          className="mt-4 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-        >
-          <AddIcon className="h-5 w-5 mr-2" /> Add Custom Detail
-        </button>
-      </Section>
-
-      <Section title="Professional Summary" icon={<SummaryIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('summary')}>
-        <Textarea placeholder="Write a brief 2-3 sentence summary of your professional experience and career goals." value={resumeData.summary} onChange={e => onDataChange('summary', e.target.value)} />
-        <button
-          onClick={() => handleAiClick('summary', { jobTitle: resumeData.personalInfo.jobTitle, experience: resumeData.experience, skills: resumeData.skills }, (text) => onDataChange('summary', text))}
-          className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
-        >
-          <MagicIcon className="h-4 w-4 mr-2" />
-          Generate with AI
-        </button>
-      </Section>
-
-      <Section title="Experience" icon={<ExperienceIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('experience')}>
-        {resumeData.experience.map((exp, index) => (
-          <div key={exp.id} className="p-4 border rounded-md mb-4 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Input placeholder="Job Title" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
-              <Input placeholder="Company Name" value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
-              <Input placeholder="City, State" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
-              <div className="flex gap-4">
-                <Input placeholder="Start Date (e.g., Jan 2020)" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
-                <Input placeholder="End Date (e.g., Present)" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
-              </div>
-            </div>
-            <Textarea placeholder="Describe your responsibilities and achievements in bullet points. e.g., • Led the development of a new client-facing dashboard..." value={exp.description} onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} />
-             <div className="flex justify-between items-center mt-2">
-              <button
-                onClick={() => handleAiClick('bulletPoints', { jobTitle: exp.jobTitle, company: exp.company, description: exp.description }, (text) => handleUpdateField('experience', index, 'description', text))}
-                className="flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
-              >
-                <MagicIcon className="h-4 w-4 mr-2" />
-                Generate Bullets with AI
-              </button>
-              <button onClick={() => onRemoveItem('experience', index)} className="text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-2"><TrashIcon className="h-5 w-5"/></button>
-            </div>
-          </div>
-        ))}
-        <button onClick={() => onAddItem('experience', { ...EMPTY_EXPERIENCE, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
-          <AddIcon className="h-5 w-5 mr-2" /> Add Experience
-        </button>
-      </Section>
-      
-      <Section title="Education" icon={<EducationIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('education')}>
-        {resumeData.education.map((edu, index) => (
-          <div key={edu.id} className="p-4 border rounded-md mb-4 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Input placeholder="Degree or Field of Study" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
-              <Input placeholder="Institution Name" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
-              <div className="flex gap-4">
-                <Input placeholder="Start Date (e.g., Sep 2013)" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
-                <Input placeholder="End Date (e.g., May 2017)" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
-              </div>
-            </div>
-            <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-2 float-right"><TrashIcon className="h-5 w-5"/></button>
-
-          </div>
-        ))}
-        <button onClick={() => onAddItem('education', { ...EMPTY_EDUCATION, id: crypto.randomUUID() })} className="mt-2 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
-          <AddIcon className="h-5 w-5 mr-2" /> Add Education
-        </button>
-      </Section>
-
-      <Section title="Skills" icon={<SkillsIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('skills')}>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {resumeData.skills.map((skill, index) => (
-          <div key={skill.id} className="flex items-center bg-gray-50 dark:bg-gray-700/50 p-2 border dark:border-gray-700 rounded-md">
-            <Input placeholder="Skill (e.g., React)" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
-            <button onClick={() => onRemoveItem('skills', index)} className="ml-2 text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-1"><TrashIcon className="h-4 w-4"/></button>
-          </div>
-        ))}
-        </div>
-        <button onClick={() => onAddItem('skills', { ...EMPTY_SKILL, id: crypto.randomUUID() })} className="mt-4 flex items-center px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
-          <AddIcon className="h-5 w-5 mr-2" /> Add Skill
-        </button>
-      </Section>
+      {/* Dynamic Section Rendering */}
+      {sectionOrder.map((key, index) => (
+          <Section
+            key={key}
+            title={getSectionTitle(key)}
+            icon={getSectionIcon(key)}
+            onClear={getClearHandler(key)}
+            onMoveUp={() => handleMoveSection(index, 'up')}
+            onMoveDown={() => handleMoveSection(index, 'down')}
+            isFirst={index === 0}
+            isLast={index === sectionOrder.length - 1}
+          >
+              {renderSectionContent(key)}
+          </Section>
+      ))}
 
       <KeywordOptimizer resumeData={resumeData}/>
 

@@ -87,7 +87,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
           >
             <button
               onClick={() => onSelect(template.id)}
-              className={`w-full text-center p-2 border-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+              className={`w-full text-center p-2 border-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer ${
                 selected === template.id
                   ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/50 shadow-md'
                   : 'border-gray-200 bg-white hover:border-blue-400 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-blue-500'
@@ -104,10 +104,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
             </button>
 
             {hoveredThumbnailId === template.id && (
-              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-lg transition-opacity duration-300">
+              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-lg transition-opacity duration-300 pointer-events-none">
                 <button
-                  onClick={() => setPreviewTemplateId(template.id)}
-                  className="flex items-center px-3 py-1.5 bg-white text-gray-800 text-sm font-semibold rounded-md shadow-md hover:bg-gray-200 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewTemplateId(template.id);
+                  }}
+                  className="pointer-events-auto flex items-center px-3 py-1.5 bg-white text-gray-800 text-sm font-semibold rounded-md shadow-md hover:bg-gray-200 transition-colors"
                   aria-label={`Preview ${template.name} template`}
                 >
                   <EyeIcon className="h-4 w-4 mr-1.5" />

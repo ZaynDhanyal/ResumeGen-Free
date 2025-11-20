@@ -2,6 +2,7 @@
 
 
 
+
 export interface PersonalInfo {
   fullName: string;
   jobTitle: string;
@@ -46,6 +47,8 @@ export interface CustomDetail {
   value: string;
 }
 
+export type SectionKey = 'personalInfo' | 'summary' | 'experience' | 'education' | 'skills' | 'customDetails';
+
 export interface ResumeData {
   personalInfo: PersonalInfo;
   summary: string;
@@ -53,6 +56,7 @@ export interface ResumeData {
   education: Education[];
   skills: Skill[];
   customDetails: CustomDetail[];
+  sectionOrder: SectionKey[];
 }
 
 export interface CoverLetterData {

@@ -14,43 +14,43 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }
     const customDetailsToRender = customDetails.length > 0 ? customDetails : SAMPLE_RESUME.customDetails;
 
     const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-        <section className="mb-8">
-            <h2 className="text-xs font-bold uppercase tracking-widest pb-2 mb-4 border-b" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>{title}</h2>
+        <section className="mb-5">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest pb-1 mb-2 border-b" style={{ borderBottomColor: colors.secondary, color: colors.primary }}>{title}</h2>
             {children}
         </section>
     );
 
     return (
-        <div className={`p-6 sm:p-10 ${fontClass} ${lineHeightClass}`} style={{ backgroundColor: colors.background, color: colors.text }}>
-            <header className="text-center mb-12">
-                <h1 className="text-5xl font-extrabold tracking-tight">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
-                <p className="text-xl mt-1 font-light tracking-wide">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
-                <div className="flex justify-center items-center space-x-3 text-xs mt-4 text-gray-600">
+        <div className={`p-6 ${fontClass}`} style={{ backgroundColor: colors.background, color: colors.text, minHeight: '297mm' }}>
+            <header className="text-center mb-8">
+                <h1 className="text-3xl font-extrabold tracking-tight mb-1">{personalInfo.fullName || SAMPLE_RESUME.personalInfo.fullName}</h1>
+                <p className="text-sm font-light tracking-wide uppercase opacity-80">{personalInfo.jobTitle || SAMPLE_RESUME.personalInfo.jobTitle}</p>
+                <div className="flex justify-center items-center flex-wrap gap-x-3 gap-y-1 text-[10px] mt-2 text-gray-600">
                     <span>{personalInfo.email || SAMPLE_RESUME.personalInfo.email}</span>
-                    <span>&bull;</span>
+                    <span className="text-gray-300">&bull;</span>
                     <span>{personalInfo.phone || SAMPLE_RESUME.personalInfo.phone}</span>
-                    <span>&bull;</span>
+                    <span className="text-gray-300">&bull;</span>
                     <span>{personalInfo.address || SAMPLE_RESUME.personalInfo.address}</span>
                 </div>
             </header>
 
             <Section title="Summary">
-                <p className="text-sm">{summary || SAMPLE_RESUME.summary}</p>
+                <p className={`text-xs ${lineHeightClass}`}>{summary || SAMPLE_RESUME.summary}</p>
             </Section>
 
             {(customDetailsToRender.length > 0 || personalInfo.nationality) && (
                 <Section title="Additional Details">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                    <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px] ${lineHeightClass}`}>
                         {personalInfo.nationality && (
                             <div>
-                                <p className="font-semibold">Nationality</p>
-                                <p className="text-gray-700">{personalInfo.nationality}</p>
+                                <p className="font-bold">Nationality</p>
+                                <p>{personalInfo.nationality}</p>
                             </div>
                         )}
                         {customDetailsToRender.map(detail => (
                             <div key={detail.id}>
-                                <p className="font-semibold">{detail.label}</p>
-                                <p className="text-gray-700">{detail.value}</p>
+                                <p className="font-bold">{detail.label}</p>
+                                <p>{detail.value}</p>
                             </div>
                         ))}
                     </div>
@@ -58,36 +58,40 @@ const MinimalistTemplate: React.FC<TemplateProps> = ({ data, theme, formatting }
             )}
 
             <Section title="Experience">
+                <div className="space-y-4">
                 {experiencesToRender.map(exp => (
-                    <div key={exp.id} className="mb-6">
-                        <div className="flex justify-between items-baseline">
-                            <h3 className="text-lg font-bold" style={{ color: colors.primary }}>{exp.jobTitle}</h3>
-                            <p className="text-xs font-mono" style={{ opacity: 0.7 }}>{exp.startDate} - {exp.endDate}</p>
+                    <div key={exp.id}>
+                        <div className="flex justify-between items-baseline mb-0.5">
+                            <h3 className="text-sm font-bold" style={{ color: colors.primary }}>{exp.jobTitle}</h3>
+                            <p className="text-[10px] font-mono opacity-70 whitespace-nowrap">{exp.startDate} - {exp.endDate}</p>
                         </div>
-                        <p className="text-md font-semibold">{exp.company}, {exp.location}</p>
-                        <ul className="list-disc list-inside mt-2 text-sm space-y-1 text-gray-700">
-                            {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i}>{line.replace('•','').trim()}</li>)}
+                        <p className="text-xs font-semibold mb-1">{exp.company}, {exp.location}</p>
+                        <ul className={`list-disc list-inside text-xs space-y-0.5 ${lineHeightClass}`}>
+                            {exp.description.split('\n').filter(line => line.trim() !== '').map((line, i) => <li key={i} className="pl-1">{line.replace('•','').trim()}</li>)}
                         </ul>
                     </div>
                 ))}
+                </div>
             </Section>
 
             <Section title="Education">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {educationToRender.map(edu => (
-                    <div key={edu.id} className="mb-4">
-                        <div className="flex justify-between items-baseline">
-                            <h3 className="text-lg font-bold" style={{ color: colors.primary }}>{edu.degree}</h3>
-                            <p className="text-xs font-mono" style={{ opacity: 0.7 }}>{edu.startDate} - {edu.endDate}</p>
+                    <div key={edu.id}>
+                        <h3 className="text-xs font-bold leading-tight" style={{ color: colors.primary }}>{edu.degree}</h3>
+                        <div className="flex justify-between items-baseline mt-0.5">
+                            <p className="text-[10px] font-medium">{edu.institution}</p>
+                            <p className="text-[9px] opacity-70">{edu.startDate} - {edu.endDate}</p>
                         </div>
-                        <p className="text-md font-semibold">{edu.institution}, {edu.location}</p>
                     </div>
                 ))}
+                </div>
             </Section>
 
             <Section title="Skills">
                 <div className="flex flex-wrap gap-2">
                     {skillsToRender.map(skill => (
-                        <span key={skill.id} className="text-sm px-4 py-1.5 rounded" style={{ backgroundColor: colors.secondary, color: colors.primary }}>
+                        <span key={skill.id} className="text-[10px] px-2 py-0.5 rounded border" style={{ borderColor: colors.secondary, color: colors.primary }}>
                             {skill.name}
                         </span>
                     ))}
