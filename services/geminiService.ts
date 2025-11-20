@@ -1,10 +1,16 @@
-
 import { GoogleGenAI, Type } from '@google/genai';
 import { Experience, Skill, KeywordAnalysis, ResumeData } from '../types';
 
 // Helper to check if key is valid (not empty/undefined)
 const apiKey = process.env.API_KEY;
 const isKeyConfigured = apiKey && apiKey.length > 0;
+
+// Log status for debugging (masked)
+if (isKeyConfigured) {
+    console.log('Gemini Service: API Key detected (' + apiKey?.substring(0, 4) + '...)');
+} else {
+    console.warn('Gemini Service: API Key missing or empty.');
+}
 
 // Initialize with the key or a dummy value to prevent SDK constructor crash.
 // Calls will be guarded below.
