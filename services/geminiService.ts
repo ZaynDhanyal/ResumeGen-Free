@@ -31,7 +31,7 @@ async function callGeminiApi(prompt: string, config?: any, model?: string): Prom
   }
 }
 
-export async function generateSummary(jobTitle: string, experience: Experience[], skills: Skill[]): Promise<string> {
+export async function generateSummary(jobTitle: string, experience: Experience[], skills: Skill[], customInstruction?: string): Promise<string> {
   const skillsList = skills.map(s => s.name).join(', ');
   // Provide more details including descriptions and dates to the AI
   const experienceSummary = experience.map(e => 
@@ -50,6 +50,8 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
     EXPERIENCE HISTORY:
     ${experienceSummary}
 
+    ${customInstruction ? `USER CUSTOM INSTRUCTIONS (PRIORITIZE THESE): ${customInstruction}` : ''}
+
     WRITING INSTRUCTIONS:
     1.  **Start Strong:** Begin with a powerful adjective and the candidate's current professional identity (e.g., "Dynamic Senior Product Manager...").
     2.  **Infer Seniority:** Analyze the dates in the experience history to mention the approximate years of experience (e.g., "with over 7 years of proven expertise...").
@@ -66,7 +68,7 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
   }
 }
 
-export async function generateBulletPoints(jobTitle: string, company: string, description: string): Promise<string> {
+export async function generateBulletPoints(jobTitle: string, company: string, description: string, customInstruction?: string): Promise<string> {
     const prompt = `
     You are an expert resume strategist. Your task is to transform the user's rough input into 3-5 sharp, results-oriented bullet points that demonstrate value.
 
@@ -74,6 +76,8 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
     - Role: "${jobTitle}"
     - Company: "${company}"
     - User Input: "${description}"
+
+    ${customInstruction ? `USER CUSTOM INSTRUCTIONS: ${customInstruction}` : ''}
 
     INSTRUCTIONS:
     1.  **Prioritize Impact (The 'So What?'):** Do not just list duties. Every bullet point must explain the result or impact of the action. Use the "Action + Context + Result" structure.
@@ -96,10 +100,12 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
     }
 }
 
-export async function generateCoverLetter(resumeData: ResumeData, recipientName: string, recipientCompany: string): Promise<string> {
+export async function generateCoverLetter(resumeData: ResumeData, recipientName: string, recipientCompany: string, customInstruction?: string): Promise<string> {
   const prompt = `
     Write a professional and compelling cover letter body based on the following resume.
     The letter is for a position at "${recipientCompany}" and is addressed to "${recipientName || 'Hiring Manager'}".
+
+    ${customInstruction ? `USER CUSTOM INSTRUCTIONS: ${customInstruction}` : ''}
 
     The candidate's resume details are:
     - Name: ${resumeData.personalInfo.fullName}

@@ -233,14 +233,16 @@ const App: React.FC = () => {
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
 
-      // Increase scale for better quality (4 is roughly Retina quality for print)
-      const scale = 4; 
+      // Increase scale for better quality (5 is very high quality for print, ~480dpi)
+      const scale = 5; 
       const canvas = await html2canvas(element, {
         scale: scale,
         useCORS: true,
         backgroundColor: '#ffffff', // Ensure white background
         logging: false,
         windowWidth: 1200, // Force desktop width to ensure responsive layouts (like grids) render correctly
+        height: element.scrollHeight, // Capture full height even if scrolled
+        windowHeight: element.scrollHeight
       });
 
       const imgData = canvas.toDataURL('image/png'); // Use PNG for lossless text sharpness

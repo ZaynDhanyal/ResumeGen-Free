@@ -28,12 +28,13 @@ const Section: React.FC<{
     title: string; 
     icon: React.ReactNode; 
     children: React.ReactNode; 
+    tip?: string;
     onClear?: () => void;
     onMoveUp?: () => void;
     onMoveDown?: () => void;
     isFirst?: boolean;
     isLast?: boolean;
-}> = ({ title, icon, children, onClear, onMoveUp, onMoveDown, isFirst, isLast }) => (
+}> = ({ title, icon, children, tip, onClear, onMoveUp, onMoveDown, isFirst, isLast }) => (
   <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 transition-all hover:shadow-lg">
     <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
       <div className="flex items-center">
@@ -72,6 +73,12 @@ const Section: React.FC<{
         )}
       </div>
     </div>
+    {tip && (
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 text-sm text-blue-800 dark:text-blue-200 rounded-r-md flex items-start">
+            <InformationCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+            <p>{tip}</p>
+        </div>
+    )}
     {children}
   </div>
 );
@@ -207,6 +214,24 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
         return <CalendarIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
     }
     return <InformationCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
+  };
+  
+  const getSectionTip = (key: SectionKey): string => {
+      switch(key) {
+          case 'personalInfo': 
+            return "Tip: Use a professional email address (e.g., firstname.lastname@email.com) and ensure your phone number is current. Your 'Job Title' should match the role you are applying for.";
+          case 'summary':
+            return "Tip: Keep it between 3-4 sentences. Focus on your years of experience, key achievements, and what you bring to the table. Use keywords from the job description!";
+          case 'experience':
+            return "Tip: Use the STAR method (Situation, Task, Action, Result) for bullet points. Focus on achievements rather than just duties. Start each bullet with a strong action verb.";
+          case 'education':
+            return "Tip: If you have more than 5 years of experience, list Education after Experience. You can omit your GPA unless you are a recent graduate.";
+          case 'skills':
+            return "Tip: List 6-10 relevant hard and soft skills. Prioritize skills explicitly mentioned in the job description to pass Applicant Tracking Systems (ATS).";
+          case 'customDetails':
+            return "Tip: Use this section for Certifications, Languages, Projects, or Awards. Avoid including sensitive personal information like marital status unless required by your region.";
+          default: return "";
+      }
   };
 
   // Default order fallback for legacy data
@@ -514,6 +539,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
             key={key}
             title={getSectionTitle(key)}
             icon={getSectionIcon(key)}
+            tip={getSectionTip(key)}
             onClear={getClearHandler(key)}
             onMoveUp={() => handleMoveSection(index, 'up')}
             onMoveDown={() => handleMoveSection(index, 'down')}
