@@ -1,29 +1,37 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 import { Experience, Skill, KeywordAnalysis, ResumeData } from '../types';
 
-// Helper to check if key is valid (not empty/undefined)
-const apiKey = process.env.API_KEY;
-const isKeyConfigured = apiKey && apiKey.length > 0;
+const MISSING_KEY_MSG = "AI service unavailable. Please ensure the API_KEY is set in your Vercel project settings.";
 
-// Log status for debugging (masked)
-if (isKeyConfigured) {
-    console.log('Gemini Service: API Key detected (' + apiKey?.substring(0, 4) + '...)');
-} else {
-    console.warn('Gemini Service: API Key missing or empty.');
+async function callGeminiApi(prompt: string, config?: any, model?: string): Promise<string> {
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: model || 'gemini-2.5-flash',
+        contents: prompt,
+        config: config
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("API Error:", errorData);
+      throw new Error(errorData.error || 'Failed to fetch from AI service');
+    }
+
+    const data = await response.json();
+    return data.text;
+  } catch (error) {
+    console.error("Gemini Service Error:", error);
+    throw error;
+  }
 }
 
-// Initialize with the key or a dummy value to prevent SDK constructor crash.
-// Calls will be guarded below.
-const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
-
-const MISSING_KEY_MSG = "AI features are currently unavailable (API Key not configured). Please set the API_KEY environment variable.";
-
 export async function generateSummary(jobTitle: string, experience: Experience[], skills: Skill[]): Promise<string> {
-  if (!isKeyConfigured) {
-    console.warn("Gemini API Key missing");
-    return MISSING_KEY_MSG;
-  }
-
   const skillsList = skills.map(s => s.name).join(', ');
   const experienceSummary = experience.map(e => `Worked as ${e.jobTitle} at ${e.company}.`).join(' ');
   
@@ -36,22 +44,13 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
   `;
 
   try {
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-    });
-    return response.text || "No summary generated.";
+    return await callGeminiApi(prompt);
   } catch (error) {
-    console.error("Error generating summary:", error);
     return "Failed to generate summary. Please try again later.";
   }
 }
 
 export async function generateBulletPoints(jobTitle: string, company: string, description: string): Promise<string> {
-    if (!isKeyConfigured) {
-        return "• AI generation disabled (Missing API Key)\n• Please configure your environment variables.";
-    }
-
     const prompt = `
     Based on the role of "${jobTitle}" at "${company}" with the following context: "${description}", 
     generate 3-5 impactful, professional resume bullet points.
@@ -62,22 +61,13 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
     `;
     
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
-        return response.text || "";
+        return await callGeminiApi(prompt);
     } catch (error) {
-        console.error("Error generating bullet points:", error);
         return "• Failed to generate bullet points.";
     }
 }
 
 export async function generateCoverLetter(resumeData: ResumeData, recipientName: string, recipientCompany: string): Promise<string> {
-  if (!isKeyConfigured) {
-    return MISSING_KEY_MSG;
-  }
-
   const prompt = `
     Write a professional and compelling cover letter body based on the following resume.
     The letter is for a position at "${recipientCompany}" and is addressed to "${recipientName || 'Hiring Manager'}".
@@ -99,27 +89,14 @@ export async function generateCoverLetter(resumeData: ResumeData, recipientName:
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
-    return response.text || "No cover letter generated.";
+    return await callGeminiApi(prompt);
   } catch (error) {
-    console.error("Error generating cover letter:", error);
     return "Failed to generate cover letter.";
   }
 }
 
 
 export async function analyzeKeywords(resumeText: string, jobDescription: string): Promise<KeywordAnalysis> {
-    if (!isKeyConfigured) {
-        // Return empty analysis to prevent crash
-        return {
-            presentKeywords: [],
-            missingKeywords: ["API Key Missing"]
-        };
-    }
-
     const prompt = `
     Analyze the following resume and job description.
     Identify important keywords from the job description.
@@ -137,29 +114,26 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
     ---
     `;
 
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        presentKeywords: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING },
-                        },
-                        missingKeywords: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING },
-                        },
-                    },
+    const config = {
+        responseMimeType: 'application/json',
+        responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+                presentKeywords: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                },
+                missingKeywords: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
                 },
             },
-        });
-        
-        const jsonText = response.text ? response.text.trim() : "{}";
+        },
+    };
+
+    try {
+        const text = await callGeminiApi(prompt, config);
+        const jsonText = text ? text.trim() : "{}";
         return JSON.parse(jsonText) as KeywordAnalysis;
 
     } catch (error) {
