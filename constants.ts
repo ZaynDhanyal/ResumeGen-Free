@@ -1,4 +1,4 @@
-import { ResumeData, CoverLetterData, TemplateId, Theme, FontFamily, LineHeight, FormattingOptions, BlogPost, AffiliateBanner } from './types';
+import { ResumeData, CoverLetterData, TemplateId, Theme, FontFamily, LineHeight, FormattingOptions, BlogPost } from './types';
 
 export const EMPTY_EXPERIENCE = {
   id: '',
@@ -229,30 +229,6 @@ export const DEFAULT_BLOG_POSTS: BlogPost[] = [
       author: 'Emily White',
       date: '2024-07-05',
     },
-];
-
-export const DEFAULT_AFFILIATE_BANNERS: AffiliateBanner[] = [
-    {
-        id: 'banner1',
-        name: 'Grammarly',
-        url: 'https://www.grammarly.com/',
-        imageUrl: 'https://picsum.photos/seed/grammarly/300/100',
-        description: 'Perfect your writing with Grammarly. Ensure your resume is error-free.'
-    },
-    {
-        id: 'banner2',
-        name: 'LinkedIn Learning',
-        url: 'https://www.linkedin.com/learning/',
-        imageUrl: 'https://picsum.photos/seed/linkedin/300/100',
-        description: 'Upskill with thousands of courses on LinkedIn Learning.'
-    },
-    {
-        id: 'banner3',
-        name: 'Coursera',
-        url: 'https://www.coursera.org/',
-        imageUrl: 'https://picsum.photos/seed/coursera/300/100',
-        description: 'Learn from top universities and companies with Coursera.'
-    }
 ];
 
 export const FONT_OPTIONS: { id: FontFamily; name: string; css: string }[] = [

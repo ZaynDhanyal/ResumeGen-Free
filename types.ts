@@ -1,6 +1,7 @@
 
 
 
+
 export interface PersonalInfo {
   fullName: string;
   jobTitle: string;
@@ -97,12 +98,4 @@ export interface BlogPost {
   author: string;
   date: string;
   imageUrl?: string;
-}
-
-export interface AffiliateBanner {
-    id: string;
-    name: string;
-    url: string;
-    imageUrl: string;
-    description: string;
 }
