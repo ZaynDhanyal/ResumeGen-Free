@@ -11,7 +11,7 @@ async function callGeminiApi(prompt: string, config?: any, model?: string): Prom
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: model || 'gemini-2.5-flash-lite',
+        model: model || 'gemini-2.5-flash',
         contents: prompt,
         config: config
       })
