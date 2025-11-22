@@ -83,12 +83,30 @@ const Section: React.FC<{
   </div>
 );
 
-const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
-  <input {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 dark:placeholder:text-gray-400" />
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+    label?: string;
+    helperText?: string;
+}
+
+const Input: React.FC<InputProps> = ({ label, helperText, className, ...props }) => (
+  <div className={className}>
+    {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>}
+    <input {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 dark:placeholder:text-gray-400" />
+    {helperText && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{helperText}</p>}
+  </div>
 );
 
-const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
-  <textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 dark:placeholder:text-gray-400" rows={5} />
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+    label?: string;
+    helperText?: string;
+}
+
+const Textarea: React.FC<TextareaProps> = ({ label, helperText, className, ...props }) => (
+  <div className={className}>
+    {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>}
+    <textarea {...props} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 dark:placeholder:text-gray-400" rows={5} />
+    {helperText && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{helperText}</p>}
+  </div>
 );
 
 const ResumeEditor: React.FC<ResumeEditorProps> = ({
@@ -219,17 +237,17 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
   const getSectionTip = (key: SectionKey): string => {
       switch(key) {
           case 'personalInfo': 
-            return "Tip: Use a professional email address (e.g., firstname.lastname@email.com) and ensure your phone number is current. Your 'Job Title' should match the role you are applying for.";
+            return "Tip: Use a professional email address and ensure your job title matches the role you are applying for.";
           case 'summary':
-            return "Tip: Keep it between 3-4 sentences. Focus on your years of experience, key achievements, and what you bring to the table. Use keywords from the job description!";
+            return "Tip: Keep it between 3-4 sentences. Focus on your years of experience, key achievements, and what you bring to the table.";
           case 'experience':
-            return "Tip: Use the STAR method (Situation, Task, Action, Result) for bullet points. Focus on achievements rather than just duties. Start each bullet with a strong action verb.";
+            return "Tip: Use the STAR method (Situation, Task, Action, Result) for bullet points. Start each bullet with a strong action verb.";
           case 'education':
-            return "Tip: If you have more than 5 years of experience, list Education after Experience. You can omit your GPA unless you are a recent graduate.";
+            return "Tip: List Education after Experience if you are an experienced professional. New grads can put it first.";
           case 'skills':
-            return "Tip: List 6-10 relevant hard and soft skills. Prioritize skills explicitly mentioned in the job description to pass Applicant Tracking Systems (ATS).";
+            return "Tip: List 6-10 relevant hard and soft skills. Prioritize skills mentioned in the job description.";
           case 'customDetails':
-            return "Tip: Use this section for Certifications, Languages, Projects, or Awards. Avoid including sensitive personal information like marital status unless required by your region.";
+            return "Tip: Use this for Certifications, Languages, Projects, or Awards.";
           default: return "";
       }
   };
@@ -243,14 +261,14 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
               return (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input placeholder="Full Name" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
-                        <Input placeholder="Job Title" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
-                        <Input placeholder="Email Address" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
-                        <Input placeholder="Phone Number" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
-                        <Input placeholder="City, State" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
-                        <Input placeholder="LinkedIn Profile URL" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
-                        <Input placeholder="Personal Website/Portfolio" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
-                        <Input placeholder="Nationality" value={resumeData.personalInfo.nationality} onChange={e => handleUpdateField('personalInfo', undefined, 'nationality', e.target.value)} />
+                        <Input label="Full Name" helperText="Your legal first and last name." placeholder="e.g. John Doe" value={resumeData.personalInfo.fullName} onChange={e => handleUpdateField('personalInfo', undefined, 'fullName', e.target.value)} />
+                        <Input label="Job Title" helperText="The specific role you are targeting." placeholder="e.g. Senior Product Manager" value={resumeData.personalInfo.jobTitle} onChange={e => handleUpdateField('personalInfo', undefined, 'jobTitle', e.target.value)} />
+                        <Input label="Email Address" helperText="Use a professional email format." placeholder="e.g. john.doe@email.com" type="email" value={resumeData.personalInfo.email} onChange={e => handleUpdateField('personalInfo', undefined, 'email', e.target.value)} />
+                        <Input label="Phone Number" helperText="A number where you can be easily reached." placeholder="e.g. (555) 123-4567" value={resumeData.personalInfo.phone} onChange={e => handleUpdateField('personalInfo', undefined, 'phone', e.target.value)} />
+                        <Input label="Location" helperText="City and State/Country is usually sufficient." placeholder="e.g. New York, NY" value={resumeData.personalInfo.address} onChange={e => handleUpdateField('personalInfo', undefined, 'address', e.target.value)} />
+                        <Input label="LinkedIn Profile" helperText="URL to your public LinkedIn profile." placeholder="linkedin.com/in/johndoe" value={resumeData.personalInfo.linkedin} onChange={e => handleUpdateField('personalInfo', undefined, 'linkedin', e.target.value)} />
+                        <Input label="Website / Portfolio" helperText="Link to your portfolio or personal site." placeholder="www.johndoe.com" value={resumeData.personalInfo.website} onChange={e => handleUpdateField('personalInfo', undefined, 'website', e.target.value)} />
+                        <Input label="Nationality" helperText="Optional. Include if required for visa reasons." placeholder="e.g. American" value={resumeData.personalInfo.nationality} onChange={e => handleUpdateField('personalInfo', undefined, 'nationality', e.target.value)} />
                     </div>
                     <div className="mt-4 pt-4 border-t dark:border-gray-700">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Picture</label>
@@ -287,7 +305,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
           case 'customDetails':
               return (
                 <>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 -mt-2">Add custom fields like Marital Status, etc.</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 -mt-2">Add custom fields like Languages, Certifications, or Awards.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {resumeData.customDetails.map((detail, index) => (
                         <div key={detail.id} className="relative bg-gray-50 dark:bg-gray-700/50 p-4 border dark:border-gray-700 rounded-lg shadow-sm">
@@ -300,12 +318,14 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                                 </div>
                                 <div className="flex-1 space-y-2">
                                     <Input 
-                                        placeholder="Label (e.g., Marital Status)" 
+                                        label="Label"
+                                        placeholder="e.g. Languages" 
                                         value={detail.label} 
                                         onChange={e => handleUpdateField('customDetails', index, 'label', e.target.value)} 
                                     />
                                     <Input 
-                                        placeholder="Value (e.g., Single)" 
+                                        label="Value"
+                                        placeholder="e.g. English (Native), Spanish (B2)" 
                                         value={detail.value} 
                                         onChange={e => handleUpdateField('customDetails', index, 'value', e.target.value)} 
                                     />
@@ -325,7 +345,13 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
           case 'summary':
               return (
                 <>
-                    <Textarea placeholder="Write a brief 2-3 sentence summary of your professional experience and career goals." value={resumeData.summary} onChange={e => onDataChange('summary', e.target.value)} />
+                    <Textarea 
+                        label="Professional Summary"
+                        helperText="Briefly highlight your career achievements and goals."
+                        placeholder="Write a brief 2-3 sentence summary..." 
+                        value={resumeData.summary} 
+                        onChange={e => onDataChange('summary', e.target.value)} 
+                    />
                     <button
                     onClick={() => handleAiClick('summary', { jobTitle: resumeData.personalInfo.jobTitle, experience: resumeData.experience, skills: resumeData.skills }, (text) => onDataChange('summary', text))}
                     className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
@@ -341,15 +367,21 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                     {resumeData.experience.map((exp, index) => (
                     <div key={exp.id} className="p-4 border rounded-md mb-4 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <Input placeholder="Job Title" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
-                        <Input placeholder="Company Name" value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
-                        <Input placeholder="City, State" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
+                        <Input label="Job Title" helperText="Your role." placeholder="e.g. Project Manager" value={exp.jobTitle} onChange={e => handleUpdateField('experience', index, 'jobTitle', e.target.value)} />
+                        <Input label="Company" helperText="Employer name." placeholder="e.g. Acme Corp" value={exp.company} onChange={e => handleUpdateField('experience', index, 'company', e.target.value)} />
+                        <Input label="Location" helperText="City, State." placeholder="e.g. London, UK" value={exp.location} onChange={e => handleUpdateField('experience', index, 'location', e.target.value)} />
                         <div className="flex gap-4">
-                            <Input placeholder="Start Date (e.g., Jan 2020)" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
-                            <Input placeholder="End Date (e.g., Present)" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
+                            <Input label="Start Date" helperText="Month Year" placeholder="e.g. Jan 2020" value={exp.startDate} onChange={e => handleUpdateField('experience', index, 'startDate', e.target.value)} />
+                            <Input label="End Date" helperText="'Present' if current." placeholder="e.g. Present" value={exp.endDate} onChange={e => handleUpdateField('experience', index, 'endDate', e.target.value)} />
                         </div>
                         </div>
-                        <Textarea placeholder="Describe your responsibilities and achievements in bullet points. e.g., • Led the development of a new client-facing dashboard..." value={exp.description} onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} />
+                        <Textarea 
+                            label="Description"
+                            helperText="Key responsibilities and achievements."
+                            placeholder="• Led the development of..." 
+                            value={exp.description} 
+                            onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} 
+                        />
                         <div className="flex justify-between items-center mt-2">
                         <button
                             onClick={() => handleAiClick('bulletPoints', { jobTitle: exp.jobTitle, company: exp.company, description: exp.description }, (text) => handleUpdateField('experience', index, 'description', text))}
@@ -373,11 +405,11 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                     {resumeData.education.map((edu, index) => (
                     <div key={edu.id} className="p-4 border rounded-md mb-4 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/50">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <Input placeholder="Degree or Field of Study" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
-                        <Input placeholder="Institution Name" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
+                        <Input label="Degree" helperText="Qualification earned." placeholder="e.g. BSc Computer Science" value={edu.degree} onChange={e => handleUpdateField('education', index, 'degree', e.target.value)} />
+                        <Input label="Institution" helperText="School/University name." placeholder="e.g. Harvard University" value={edu.institution} onChange={e => handleUpdateField('education', index, 'institution', e.target.value)} />
                         <div className="flex gap-4">
-                            <Input placeholder="Start Date (e.g., Sep 2013)" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
-                            <Input placeholder="End Date (e.g., May 2017)" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
+                            <Input label="Start Date" helperText="Year or Month Year" placeholder="e.g. 2013" value={edu.startDate} onChange={e => handleUpdateField('education', index, 'startDate', e.target.value)} />
+                            <Input label="End Date" helperText="Graduation Year" placeholder="e.g. 2017" value={edu.endDate} onChange={e => handleUpdateField('education', index, 'endDate', e.target.value)} />
                         </div>
                         </div>
                         <button onClick={() => onRemoveItem('education', index)} className="text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-2 float-right"><TrashIcon className="h-5 w-5"/></button>
@@ -392,11 +424,11 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
           case 'skills':
               return (
                 <>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {resumeData.skills.map((skill, index) => (
                     <div key={skill.id} className="flex items-center bg-gray-50 dark:bg-gray-700/50 p-2 border dark:border-gray-700 rounded-md">
-                        <Input placeholder="Skill (e.g., React)" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
-                        <button onClick={() => onRemoveItem('skills', index)} className="ml-2 text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-1"><TrashIcon className="h-4 w-4"/></button>
+                        <Input label="Skill Name" helperText="Specific tool or ability." placeholder="e.g. React" value={skill.name} onChange={e => handleUpdateField('skills', index, 'name', e.target.value)} className="flex-grow" />
+                        <button onClick={() => onRemoveItem('skills', index)} className="ml-2 mt-5 text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-1"><TrashIcon className="h-4 w-4"/></button>
                     </div>
                     ))}
                     </div>
@@ -511,6 +543,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                         <option key={font.id} value={font.id}>{font.name}</option>
                     ))}
                 </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Choose a font that matches your profession.</p>
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Line Spacing</label>
@@ -529,6 +562,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                         </button>
                     ))}
                 </div>
+                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Adjust spacing to fit more or less content.</p>
             </div>
         </div>
       </div>

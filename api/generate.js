@@ -1,5 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
-
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -24,18 +22,58 @@ export default async function handler(req, res) {
   try {
     const { model, contents, config } = req.body;
     
-    const ai = new GoogleGenAI({ apiKey });
+    // Default to flash-lite for speed
+    const modelName = model || 'gemini-2.5-flash-lite';
     
-    // Use the requested model or default to flash
-    const modelName = model || 'gemini-2.5-flash';
+    // Direct REST API URL
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-    const result = await ai.models.generateContent({
-      model: modelName,
-      contents,
-      config
+    // Format the payload for the REST API
+    // The client sends `contents` as a string (the prompt)
+    const requestBody = {
+        contents: [{ parts: [{ text: contents }] }]
+    };
+
+    // Map client config to generationConfig
+    if (config) {
+        requestBody.generationConfig = config;
+    }
+
+    // Perform lightweight fetch instead of loading heavy SDK
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
     });
 
-    return res.status(200).json({ text: result.text });
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Gemini API Error:', response.status, errorText);
+        // Fallback logic: if 2.5-flash-lite fails (e.g. not available in region), try 1.5-flash
+        if (modelName === 'gemini-2.5-flash-lite' && response.status === 404) {
+             console.log('Retrying with gemini-1.5-flash...');
+             const retryUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+             const retryResponse = await fetch(retryUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+             });
+             if (retryResponse.ok) {
+                 const retryData = await retryResponse.json();
+                 const retryText = retryData.candidates?.[0]?.content?.parts?.[0]?.text;
+                 return res.status(200).json({ text: retryText || '' });
+             }
+        }
+        
+        throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    return res.status(200).json({ text });
   } catch (error) {
     console.error('Error generating content:', error);
     return res.status(500).json({ error: error.message || 'Failed to generate content' });

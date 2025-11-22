@@ -86,6 +86,9 @@ const AiSuggestionModal: React.FC<AiSuggestionModalProps> = ({ type, context, on
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Use this to guide the AI tone (e.g., "Make it authoritative", "Focus on soft skills") or to mention specific achievements you want highlighted.
+                </p>
                 <button
                     onClick={fetchSuggestion}
                     disabled={isLoading}

@@ -11,16 +11,23 @@ async function callGeminiApi(prompt: string, config?: any, model?: string): Prom
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: model || 'gemini-2.5-flash',
+        model: model || 'gemini-2.5-flash-lite',
         contents: prompt,
         config: config
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("API Error:", errorData);
-      throw new Error(errorData.error || 'Failed to fetch from AI service');
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+         const errorData = await response.json();
+         console.error("API Error:", errorData);
+         throw new Error(errorData.error || 'Failed to fetch from AI service');
+      } else {
+         const text = await response.text();
+         console.error("API returned non-JSON response:", text);
+         throw new Error("Server returned an unexpected response. Please check the Vercel logs.");
+      }
     }
 
     const data = await response.json();
@@ -62,7 +69,8 @@ export async function generateSummary(jobTitle: string, experience: Experience[]
   `;
 
   try {
-    return await callGeminiApi(prompt);
+    // Limit tokens to speed up response
+    return await callGeminiApi(prompt, { maxOutputTokens: 500 });
   } catch (error) {
     return "Failed to generate summary. Please try again later.";
   }
@@ -94,7 +102,8 @@ export async function generateBulletPoints(jobTitle: string, company: string, de
     `;
     
     try {
-        return await callGeminiApi(prompt);
+        // Limit tokens to speed up response
+        return await callGeminiApi(prompt, { maxOutputTokens: 500 });
     } catch (error) {
         return "• Failed to generate bullet points.";
     }
@@ -124,7 +133,8 @@ export async function generateCoverLetter(resumeData: ResumeData, recipientName:
   `;
 
   try {
-    return await callGeminiApi(prompt);
+    // Limit tokens to speed up response
+    return await callGeminiApi(prompt, { maxOutputTokens: 1000 });
   } catch (error) {
     return "Failed to generate cover letter.";
   }
@@ -151,6 +161,7 @@ export async function analyzeKeywords(resumeText: string, jobDescription: string
 
     const config = {
         responseMimeType: 'application/json',
+        maxOutputTokens: 1000, // Limit response size
         responseSchema: {
             type: Type.OBJECT,
             properties: {
