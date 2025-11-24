@@ -4,9 +4,7 @@ import { ResumeData, TemplateId, ThemeId, Experience, Education, Skill, Formatti
 import { EMPTY_EXPERIENCE, EMPTY_EDUCATION, EMPTY_SKILL, EMPTY_CUSTOM_DETAIL, FONT_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants';
 import TemplateSelector from './TemplateSelector';
 import ThemeSelector from './ThemeSelector';
-import KeywordOptimizer from './KeywordOptimizer';
-import AiSuggestionModal from './AiSuggestionModal';
-import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, MagicIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, PrintIcon, ChevronUpIcon, ChevronDownIcon } from './icons';
+import { PersonalInfoIcon, SummaryIcon, ExperienceIcon, EducationIcon, SkillsIcon, AddIcon, TrashIcon, DownloadIcon, PaletteIcon, DocumentTextIcon, XCircleIcon, ShareIcon, EyeIcon, InformationCircleIcon, GlobeAltIcon, UsersIcon, IdentificationIcon, CalendarIcon, PrintIcon, ChevronUpIcon, ChevronDownIcon } from './icons';
 
 interface ResumeEditorProps {
   resumeData: ResumeData;
@@ -112,14 +110,7 @@ const Textarea: React.FC<TextareaProps> = ({ label, helperText, className, ...pr
 const ResumeEditor: React.FC<ResumeEditorProps> = ({
   resumeData, onDataChange, onAddItem, onRemoveItem, templateId, setTemplateId, themeId, setThemeId, onDownloadPdf, formattingOptions, setFormattingOptions, onClearAll, onClearSection
 }) => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalConfig, setModalConfig] = useState<{ type: 'summary' | 'bulletPoints'; context: any; onAccept: (text: string) => void } | null>(null);
   const [isCopied, setIsCopied] = useState(false);
-
-  const handleAiClick = useCallback((type: 'summary' | 'bulletPoints', context: any, onAccept: (text: string) => void) => {
-    setModalConfig({ type, context, onAccept });
-    setModalOpen(true);
-  }, []);
 
   const handleUpdateField = useCallback((
     section: keyof ResumeData,
@@ -352,13 +343,6 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                         value={resumeData.summary} 
                         onChange={e => onDataChange('summary', e.target.value)} 
                     />
-                    <button
-                    onClick={() => handleAiClick('summary', { jobTitle: resumeData.personalInfo.jobTitle, experience: resumeData.experience, skills: resumeData.skills }, (text) => onDataChange('summary', text))}
-                    className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
-                    >
-                    <MagicIcon className="h-4 w-4 mr-2" />
-                    Generate with AI
-                    </button>
                 </>
               );
           case 'experience':
@@ -383,13 +367,7 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
                             onChange={e => handleUpdateField('experience', index, 'description', e.target.value)} 
                         />
                         <div className="flex justify-between items-center mt-2">
-                        <button
-                            onClick={() => handleAiClick('bulletPoints', { jobTitle: exp.jobTitle, company: exp.company, description: exp.description }, (text) => handleUpdateField('experience', index, 'description', text))}
-                            className="flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
-                        >
-                            <MagicIcon className="h-4 w-4 mr-2" />
-                            Generate Bullets with AI
-                        </button>
+                        <div className="flex-1"></div>
                         <button onClick={() => onRemoveItem('experience', index)} className="text-red-500 hover:text-red-700 dark:text-red-500/80 dark:hover:text-red-500 p-2"><TrashIcon className="h-5 w-5"/></button>
                         </div>
                     </div>
@@ -474,18 +452,15 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
 
   return (
     <div className="h-full overflow-y-auto pr-0 lg:pr-4">
-      {modalOpen && modalConfig && (
-        <AiSuggestionModal
-          type={modalConfig.type}
-          context={modalConfig.context}
-          onClose={() => setModalOpen(false)}
-          onAccept={modalConfig.onAccept}
-        />
-      )}
-
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6 flex-wrap">
-            <div className="w-full"><TemplateSelector selected={templateId} onSelect={setTemplateId} /></div>
+            <div className="w-full">
+                <TemplateSelector selected={templateId} onSelect={setTemplateId} />
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                    <InformationCircleIcon className="h-4 w-4 mr-1.5 text-blue-500" />
+                    Templates vary in layout. Check the preview to ensure your content fits perfectly.
+                </p>
+            </div>
             <div className="flex w-full flex-col sm:flex-row sm:w-auto gap-2 flex-wrap">
                 <button
                     onClick={handleShare}
@@ -583,8 +558,6 @@ const ResumeEditor: React.FC<ResumeEditorProps> = ({
               {renderSectionContent(key)}
           </Section>
       ))}
-
-      <KeywordOptimizer resumeData={resumeData}/>
 
       {/* Mobile View Toggle */}
       <div className="lg:hidden sticky bottom-4 flex justify-center">

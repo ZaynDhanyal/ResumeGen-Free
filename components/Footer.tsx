@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
         <div className="flex flex-col items-center text-center">
             <h3 className="text-lg font-semibold mb-4">ResumeGen Free</h3>
             <p className="text-gray-300 dark:text-gray-400 text-sm max-w-2xl">
-              Create professional resumes and cover letters with AI-powered suggestions for free.
+              Create professional resumes and cover letters for free.
             </p>
             <p className="text-gray-400 dark:text-gray-500 text-xs mt-4">
               &copy; {new Date().getFullYear()} ResumeGen Free. All Rights Reserved.

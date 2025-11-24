@@ -11,8 +11,7 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom', 'react-router-dom'],
-            pdf: ['html2canvas', 'jspdf'],
-            genai: ['@google/genai']
+            pdf: ['html2canvas', 'jspdf']
           }
         }
       }

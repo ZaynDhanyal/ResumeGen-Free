@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CoverLetterData, ResumeData, ThemeId } from '../types';
-import AiSuggestionModal from './AiSuggestionModal';
 import ThemeSelector from './ThemeSelector';
-import { MagicIcon, DownloadIcon, BuildingIcon, PersonalInfoIcon, PaletteIcon, EyeIcon, TrashIcon } from './icons';
+import { DownloadIcon, BuildingIcon, PersonalInfoIcon, PaletteIcon, EyeIcon, TrashIcon } from './icons';
 
 interface CoverLetterEditorProps {
   coverLetterData: CoverLetterData;
@@ -45,31 +44,8 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
 );
 
 const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, resumeData, onDataChange, onDownloadPdf, themeId, setThemeId, onClearSection }) => {
-    const [modalOpen, setModalOpen] = useState(false);
-  
-    const handleAiClick = () => {
-      setModalOpen(true);
-    };
-
-    const handleAcceptSuggestion = (text: string) => {
-        onDataChange('body', text);
-    }
-  
     return (
       <div className="h-full overflow-y-auto pr-0 lg:pr-4">
-        {modalOpen && (
-          <AiSuggestionModal
-            type="coverLetter"
-            context={{ 
-                resumeData, 
-                recipientName: coverLetterData.recipientName,
-                recipientCompany: coverLetterData.recipientCompany
-            }}
-            onClose={() => setModalOpen(false)}
-            onAccept={handleAcceptSuggestion}
-          />
-        )}
-
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-6 flex-wrap">
                  <div className="w-full">
@@ -100,17 +76,10 @@ const CoverLetterEditor: React.FC<CoverLetterEditorProps> = ({ coverLetterData, 
         
         <Section title="Letter Body" icon={<PersonalInfoIcon className="h-6 w-6 text-blue-600" />} onClear={() => onClearSection('body')}>
           <Textarea 
-            placeholder="Write your cover letter here, or let AI help you get started!" 
+            placeholder="Write your cover letter here..." 
             value={coverLetterData.body} 
             onChange={e => onDataChange('body', e.target.value)} 
           />
-          <button
-            onClick={handleAiClick}
-            className="mt-2 flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-md hover:bg-blue-200 transition-colors text-sm dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
-          >
-            <MagicIcon className="h-4 w-4 mr-2" />
-            Generate with AI
-          </button>
         </Section>
         
         {/* Mobile View Toggle */}

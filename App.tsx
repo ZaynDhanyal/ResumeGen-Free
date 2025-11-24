@@ -229,49 +229,68 @@ const App: React.FC = () => {
     }
 
     try {
-      // Dynamic imports to reduce initial bundle size
+      // Dynamic imports to optimize initial load
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
 
-      // Increase scale for better quality (5 is very high quality for print, ~480dpi)
-      const scale = 5; 
+      // Optimization for Crisp PDF Output:
+      // 1. windowWidth: 820px
+      //    - Slightly larger than MD (768px) to ensure desktop grid layouts are captured.
+      //    - Not too large (like 1200px) so text doesn't become tiny when scaled down to A4.
+      // 2. Scale: 4
+      //    - Ensures high DPI (approx 384 DPI) for sharp text rendering.
+      // 3. PNG Format
+      //    - Lossless compression prevents jpeg artifacts on text.
+      
       const canvas = await html2canvas(element, {
-        scale: scale,
+        scale: 4, 
         useCORS: true,
-        backgroundColor: '#ffffff', // Ensure white background
         logging: false,
-        windowWidth: 1200, // Force desktop width to ensure responsive layouts (like grids) render correctly
-        height: element.scrollHeight, // Capture full height even if scrolled
-        windowHeight: element.scrollHeight
+        backgroundColor: '#ffffff',
+        windowWidth: 820,
+        height: element.scrollHeight + 50, // Add buffer to prevent bottom cutoff
+        windowHeight: element.scrollHeight + 50,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.getElementById(elementId);
+          if (clonedElement) {
+              // Reset any scroll or height constraints to ensure full capture
+              clonedElement.style.height = 'auto';
+              clonedElement.style.width = '100%';
+              clonedElement.style.overflow = 'visible';
+              clonedElement.style.maxHeight = 'none';
+          }
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png'); // Use PNG for lossless text sharpness
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Initialize jsPDF for A4 paper
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const pdfPageWidth = pdf.internal.pageSize.getWidth();
+      const pdfPageHeight = pdf.internal.pageSize.getHeight();
       
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      
-      const ratio = canvasWidth / pdfWidth;
-      const totalImageHeight = canvasHeight / ratio;
+      // Calculate image height based on A4 width to maintain aspect ratio
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfImgHeight = (imgProps.height * pdfPageWidth) / imgProps.width;
 
+      let heightLeft = pdfImgHeight;
       let position = 0;
-      let heightLeft = totalImageHeight;
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight, '', 'FAST');
-      heightLeft -= pdfHeight;
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, pdfPageWidth, pdfImgHeight);
+      heightLeft -= pdfPageHeight;
 
+      // Add subsequent pages if content exceeds one A4 page
       while (heightLeft > 0) {
-        position -= pdfHeight;
+        position -= pdfPageHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImageHeight, '', 'FAST');
-        heightLeft -= pdfHeight;
+        pdf.addImage(imgData, 'PNG', 0, position, pdfPageWidth, pdfImgHeight);
+        heightLeft -= pdfPageHeight;
       }
       
       pdf.save(filename);
